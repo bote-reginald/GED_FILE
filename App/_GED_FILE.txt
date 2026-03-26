@@ -1,0 +1,5 @@
+
+
+            Console.WriteLine(Program._info_text);
+            _info_new = new("INFO;", ";", Program._info_text);
+            _info_list.Add(_info_new);
