@@ -39,7 +39,7 @@ class A00_Code
     private static readonly string _newline = Environment.NewLine;
     private static readonly string _separator = ";";
     private static readonly string _slow_string = "";
-    private static readonly string _start_time = DateTime.Now.ToString();
+    //private static readonly string _start_time_global = DateTime.Now.ToString();
     private static readonly string _start_time_global = DateTime.Now.ToString();
     private static string _comment_inside_code = "";
     private static string _info_0_text = "";
@@ -53,6 +53,8 @@ class A00_Code
     private static string value = "";
     private static string valueAdd = "";
     public string blank = "";
+
+
     //private bool bool_nbsp = false;
 
     static async Task Main()
@@ -101,13 +103,18 @@ class A00_Code
         List<PersLine> _persLineList = [];
 
 
-
         List<string> _all_lines = await Task.Run(() => A01_Read_Input(_path, _read_file, _extension));
 
         A05_DoAutosave(_all_lines);
 
+        _comment_inside_code = _newline + "clear Immediate Window manually";
+        Xwrite("Step_8888", true, _comment_inside_code);
+
+        _count = unknownKeyCount;
         _count = 0;
-        _nextGoalOfLines = 10000;
+        
+        _nextGoalOfLines = 60000;
+
         foreach (var _line in _all_lines)
         {
             _count += 1;
@@ -117,11 +124,20 @@ class A00_Code
 
 
             DoReplace_stuff(_line, out string _line_string);
-            //Xwrite("Step_2200", true, _count + " DoReplace_stuff > " + _line_string);
+
+            _line_string = DoReplace_Months_Days(_line_string);
+
+            _comment_inside_code = "Check input here";
+            //            _info_0_text = _newline
+            //                + "now > " + _line_string + _newline
+            //                + "org > " + _line
+            //+ _newline
+            //                ;
+            //Xwrite("Step_2205", true, _count + " > " + _info_0_text);
 
             if (_line_string.Length == 0)
             {
-                _info_0_text = DateTime.Now + " > " + _count + " > Line= > " + _line_string + " IS EMPTY           > Orig.= > " + _line; ;
+                _info_0_text = " > " + _count + " > Line= > " + _line_string + " IS EMPTY           > Orig.= > " + _line; ;
                 //Console.WriteLine(_info_0_text);
                 Trace.WriteLine(_info_0_text);
                 Debugger.Break();
@@ -134,13 +150,14 @@ class A00_Code
             {
                 _comment_inside_code = "Trace.WriteLine goes to Output inside VS while Console.Writeline goes to Prompt-Window";
 
-                _info_0_text = DateTime.Now + " > Step_1400 >  " + _nextGoalOfLines / 1000 + " TSD > Line= > " + _line_string + "           > Orig.= > " + _line; ;
+                _info_0_text = "Step_1400 > " + DateTime.Now
+                    + " > " + _nextGoalOfLines / 1000 + " TSD > Line= > " + _line_string + "           > Orig.= > " + _line; ;
                 //Console.WriteLine(_info_0_text);
                 Trace.WriteLine(_info_0_text);
                 //_info_new = new("INFO;", ";", _info_0_text);
                 //_info_list.Add(_info_new);
 
-                _nextGoalOfLines += 10000;
+                _nextGoalOfLines += 20000;
             }
 
 
@@ -369,7 +386,7 @@ class A00_Code
                         , blank, blank, blank, blank, blank, blank, blank, blank, blank, blank  // 51
                         , blank, blank, blank, blank, blank, blank, blank, blank, blank, blank  // 61
                         , blank, blank, blank, blank, blank, blank, blank, blank, blank, blank//, blank, blank, blank   70//
-                        , blank, blank, blank, blank, blank
+                                                                                              //, blank, blank, blank, blank, blank
                         );
                     _pelist.Add(peNew);
                     //_pers_text_coll_global.Clear();
@@ -386,7 +403,7 @@ class A00_Code
 
                 //}
             }
-            _info_0_text = "End of:  if (_first == 0";
+            _comment_inside_code = "End of:  if (_first == 0";
 
 
 
@@ -554,7 +571,7 @@ class A00_Code
 
                     case "I_SOUR": _pelist[_pelistIndex].I_SOUR = valueAdd; break;
 
-                    case "I_OBJE": _pelist[_pelistIndex].I_OBJE = valueAdd; break;
+                    case "I_OBJE": /*_pelist[_pelistIndex].I_OBJE = valueAdd;*/ break;
 
                     //case "I_MARR": _pelist[_famlistIndex].I_MARR = valueAdd; break;
                     //case "I_DIV ": _pelist[_famlistIndex].I_DIV = valueAdd; break;
@@ -603,6 +620,7 @@ class A00_Code
                 }
                 valueAdd = "";
             }
+            _comment_inside_code = "End of:  if (_first == 1";
             // end of : if (_first == "1")
             //#endregion _first = 1
 
@@ -617,7 +635,7 @@ class A00_Code
                 if (_line_string.Length > 6)
                 {
                     //valueAdd =_line_string.Substring(secondblankOrEnd + 1, _line_string.Length - secondblankOrEnd - 1) + _separator;
-                    valueAdd = string.Concat(_line_string.AsSpan(secondblankOrEnd + 1, _line_string.Length - secondblankOrEnd - 1), _separator);
+                    valueAdd = _line_string.Substring(secondblankOrEnd + 1, _line_string.Length - secondblankOrEnd - 1);
                     //v0 + v1 + _separator + "-" + v2 + _separator + // without
                 }
 
@@ -626,7 +644,7 @@ class A00_Code
                 //valueAdd = CleanText(valueAdd);
 
                 //value += valueAdd;
-                value += valueAdd;
+                value += valueAdd + _separator;
 
                 string v0v1v2 = v0 + v1 + "_" + v2;
 
@@ -694,7 +712,7 @@ class A00_Code
 
 
                     case "I_I_BIRT_DATE":
-                        _pelist[_pelistIndex].I_BIRT_DATE = valueAdd;
+                        _pelist[_pelistIndex].I_BIRT_DATE = valueAdd.Trim();
                         break;
                     case "I_I_NAME_GIVN":
                         _pelist[_pelistIndex].I_NAME_GIVN = valueAdd;
@@ -743,14 +761,14 @@ class A00_Code
                     case "I_I_BIRT__UID": /*_pelist[_pelistIndex].I_BIRT_UID = valueAdd;*/ break;
                     case "I_I_BIRT_NOTE": valueAdd = valueAdd.Replace(";", "#"); _pelist[_pelistIndex].I_BIRT_NOTE = valueAdd; break;
 
-                    case "I_I_DEAT_DATE": _pelist[_pelistIndex].I_DEAT_DATE = valueAdd; break;
+                    case "I_I_DEAT_DATE": _pelist[_pelistIndex].I_DEAT_DATE = valueAdd.Trim(); break;
                     case "I_I_DEAT_PLAC": _pelist[_pelistIndex].I_DEAT_PLAC = valueAdd; break;
                     case "I_I_DEAT_CAUS": _pelist[_pelistIndex].I_DEAT_CAUS = valueAdd; break;
                     case "I_I_DEAT_AGE ": _pelist[_pelistIndex].I_DEAT_AGE = valueAdd; break;
                     case "I_I_DEAT__UID": /*_pelist[_pelistIndex].I_DEAT_UID = valueAdd;*/ break;
                     case "I_I_DEAT_RIN ": /*_pelist[_pelistIndex].I_DEAT_RIN = valueAdd;*/ break;
                     case "I_I_DEAT_NOTE": valueAdd = valueAdd.Replace(";", "#"); _pelist[_pelistIndex].I_DEAT_NOTE = valueAdd; break;
-                    case "I_I_BURI_DATE": _pelist[_pelistIndex].I_BURI_DATE = valueAdd; break;
+                    case "I_I_BURI_DATE": _pelist[_pelistIndex].I_BURI_DATE = valueAdd.Trim(); break;
                     case "I_I_BURI_PLAC": _pelist[_pelistIndex].I_BURI_PLAC = valueAdd; break;
                     case "I_I_BURI_RIN ": /*_pelist[_pelistIndex].I_BIRT_RIN = valueAdd;*/ break;
                     case "I_I_BURI__UID": /*_pelist[_pelistIndex].I_BIRT_UID = valueAdd;*/ break;
@@ -805,16 +823,16 @@ class A00_Code
 
                     case "I_I_OBJE_FORM": /*_pelist[_pelistIndex].I_OBJE_FORM = valueAdd;*/ break;
                     case "I_I_OBJE_FILE": _pelist[_pelistIndex].I_OBJE_FILE = valueAdd; break;
-                    case "I_I_OBJE_TITL": _pelist[_pelistIndex].I_OBJE_TITL = valueAdd; break;
-                    case "I_I_OBJE_NOTE": _pelist[_pelistIndex].I_OBJE_NOTE = valueAdd; break;
+                    case "I_I_OBJE_TITL": /*_pelist[_pelistIndex].I_OBJE_TITL = valueAdd;*/ break;
+                    case "I_I_OBJE_NOTE": /*_pelist[_pelistIndex].I_OBJE_NOTE = valueAdd;*/ break;
                     case "I_I_OBJE__PRI": /*_pelist[_pelistIndex].I_OBJE__PRI = valueAdd;*/ break;
                     case "I_I_OBJE__CUT": /*_pelist[_pelistIndex].I_OBJE__CUT = valueAdd;*/ break;
                     case "I_I_OBJE__PAR": /*_pelist[_pelistIndex].I_OBJE__PAR = valueAdd;*/ break;
                     case "I_I_OBJE__PER": /*_pelist[_pelistIndex].I_OBJE__PER = valueAdd;*/ break;
                     case "I_I_OBJE__PHO": /*_pelist[_pelistIndex].I_OBJE__PHO = valueAdd;*/ break;
                     case "I_I_OBJE__POS": /*_pelist[_pelistIndex].I_OBJE__POS = valueAdd;*/ break;
-                    case "I_I_OBJE__DAT": _pelist[_pelistIndex].I_OBJE__DAT = valueAdd; break;
-                    case "I_I_OBJE__ALB": _pelist[_pelistIndex].I_OBJE__ALB = valueAdd; break;
+                    case "I_I_OBJE__DAT": /*_pelist[_pelistIndex].I_OBJE__DAT = valueAdd;*/ break;
+                    case "I_I_OBJE__ALB": /*_pelist[_pelistIndex].I_OBJE__ALB = valueAdd;*/ break;
                     case "I_I_OBJE__FIL": /*_pelist[_pelistIndex].I_OBJE__FIL = valueAdd;*/ break;  // FILESIZE
                     case "I_I_OBJE__PLA": /*_pelist[_pelistIndex].I_OBJE__PLA = valueAdd;*/ break;  // PLACE
 
@@ -904,7 +922,9 @@ class A00_Code
                 valueAdd = "";
 
             }
+            _comment_inside_code = "End of:  if (_first == 2";
         }
+        _comment_inside_code = "End of > foreach _all_lines";
 
 
 
@@ -912,7 +932,6 @@ class A00_Code
         {
             _info_0_text = _slow_string + "; NO_0007;for unklar / Klärung / lebt";
             Xwrite("Step_9905", true, _info_0_text);
-
 
             boolCheckUnklar = true;
         }
@@ -995,71 +1014,80 @@ class A00_Code
 
         // writing gedheadText
         _info_0_text = _newline + _newline + gedheadText + _newline;
-        Console.WriteLine(_newline + _newline + gedheadText + _newline);
-        _info_new = new("INFO;", ";", _info_0_text);
-        _info_list.Add(_info_new);
+        Xwrite("Step_2204", true, _count + _info_0_text);
+        //Console.WriteLine(_newline + _newline + gedheadText + _newline);
+        //_info_new = new("INFO;", ";", _info_0_text);
+        //_info_list.Add(_info_new);
 
+        _comment_inside_code = "if (_pelist.Count > 0)";
         if (_pelist.Count > 0)
         {
             _info_0_text = "PERS-Count   ;" + _pelist.Count;
-            Console.WriteLine(_newline + _info_0_text);
-            _info_new = new("INFO;", ";", _info_0_text);
-            _info_list.Add(_info_new);
+            Xwrite("Step_2211", true, _count + _info_0_text);
+            //Console.WriteLine(_newline + _info_0_text);
+            //_info_new = new("INFO;", ";", _info_0_text);
+            //_info_list.Add(_info_new);
 
             if (_famlist.Count > 0)
             {
                 _info_0_text = "FAM-Count    ;" + _famlist.Count;
-                Console.WriteLine(_newline + _info_0_text);
-                _info_new = new("INFO;", ";", _info_0_text);
-                _info_list.Add(_info_new);
+                Xwrite("Step_2212", true, _info_0_text);
+                //Console.WriteLine(_newline + _info_0_text);
+                //_info_new = new("INFO;", ";", _info_0_text);
+                //_info_list.Add(_info_new);
             }
             if (_notelist.Count > 0)
             {
                 _info_0_text = "NOTE-Count   ;" + _notelist.Count;
+                Xwrite("Step_2213", true, _info_0_text);
                 //+ _newline;
-                Console.WriteLine(_newline + _info_0_text);
-                _info_new = new("INFO;", ";", _info_0_text);
-                _info_list.Add(_info_new);
+                //Console.WriteLine(_newline + _info_0_text);
+                //_info_new = new("INFO;", ";", _info_0_text);
+                //_info_list.Add(_info_new);
             }
             if (_albumlist.Count > 0)
             {
                 _info_0_text = "ALBUM-Count  ;" + _albumlist.Count;
+                Xwrite("Step_2214", true, _info_0_text);
                 //+ _newline;
-                Console.WriteLine(_newline + _info_0_text);
-                _info_new = new("INFO;", ";", _info_0_text);
-                _info_list.Add(_info_new);
+                //Console.WriteLine(_newline + _info_0_text);
+                //_info_new = new("INFO;", ";", _info_0_text);
+                //_info_list.Add(_info_new);
             }
             if (_source_list.Count > 0)
             {
                 _info_0_text = "SOURCE-Count ;" + _source_list.Count;
-                Console.WriteLine(_newline + _info_0_text);
-                _info_new = new("INFO;", ";", _info_0_text);
-                _info_list.Add(_info_new);
+                Xwrite("Step_2215", true, _info_0_text);
+                //Console.WriteLine(_newline + _info_0_text);
+                //_info_new = new("INFO;", ";", _info_0_text);
+                //_info_list.Add(_info_new);
             }
 
             bool countfor = true;
             if (countfor == true)  // Count Section
             {
                 string isEmptyString = " ";
-                _info_0_text = "";
-                _info_0_text += ";5555555;Count for ;TOTAL      ;" + _pelist.Count(a => a.I_SEX != isEmptyString) + _newline; ;
-                _info_0_text += ";5555555;Count for ;I_BIRT_DATE;" + _pelist.Count(a => a.I_BIRT_DATE != isEmptyString) + _newline; ;
-                _info_0_text += ";5555555;Count for ;I_BIRT_PLAC;" + _pelist.Count(a => a.I_BIRT_PLAC != isEmptyString) + _newline; ;
-                _info_0_text += ";5555555;Count for ;I_DEAT_DATE;" + _pelist.Count(a => a.I_DEAT_DATE != isEmptyString) + _newline; ;
-                _info_0_text += ";5555555;Count for ;I_DEAT_PLAC;" + _pelist.Count(a => a.I_DEAT_PLAC != isEmptyString) + _newline; ;
-                _info_0_text += ";5555555;Count for ;I_BURI_PLAC;" + _pelist.Count(a => a.I_BURI_PLAC != isEmptyString) + _newline; ;
-                _info_0_text += ";5555555;Count for ;I_FAMS     ;" + _pelist.Count(a => a.I_FAMS != isEmptyString) + _newline; ;
-                _info_0_text += ";5555555;Count for ;F_HUSB     ;" + _famlist.Count(a => a.F_HUSB != isEmptyString) + _newline; ;
-                _info_0_text += ";5555555;Count for ;F_WIFE     ;" + _famlist.Count(a => a.F_WIFE != isEmptyString) + _newline; ;
-                _info_0_text += ";5555555;Count for ;F_MARR_DATE;" + _famlist.Count(a => a.F_MARR_DATE != isEmptyString) + _newline; ;
-                _info_0_text += ";5555555;Count for ;F_MARR_PLAC;" + _famlist.Count(a => a.F_MARR_PLAC != isEmptyString) + _newline; ;
-                _info_0_text += ";5555555;Count for ;F_MARR_NOTE;" + _famlist.Count(a => a.F_MARR_NOTE != isEmptyString) + _newline; ;
-                _info_0_text += ";5555555;Count for ;I_BIRT_NOTE;" + _pelist.Count(a => a.I_BIRT_NOTE != isEmptyString) + _newline; ;
-                _info_0_text += ";5555555;Count for ;I_DEAT_NOTE;" + _pelist.Count(a => a.I_DEAT_NOTE != isEmptyString) + _newline; ;
+                _info_0_text = "" + _newline;
+                _info_0_text += ";Step_2202:;Count for ;TOTAL      ;" + _pelist.Count(a => a.I_SEX != isEmptyString) + _newline; ;
+                _info_0_text += ";Step_2202:;Count for ;I_BIRT_DATE;" + _pelist.Count(a => a.I_BIRT_DATE != isEmptyString) + _newline; ;
+                _info_0_text += ";Step_2202:;Count for ;I_BIRT_PLAC;" + _pelist.Count(a => a.I_BIRT_PLAC != isEmptyString) + _newline; ;
+                _info_0_text += ";Step_2202:;Count for ;I_DEAT_DATE;" + _pelist.Count(a => a.I_DEAT_DATE != isEmptyString) + _newline; ;
+                _info_0_text += ";Step_2202:;Count for ;I_DEAT_PLAC;" + _pelist.Count(a => a.I_DEAT_PLAC != isEmptyString) + _newline; ;
+                _info_0_text += ";Step_2202:;Count for ;I_BURI_PLAC;" + _pelist.Count(a => a.I_BURI_PLAC != isEmptyString) + _newline; ;
+                _info_0_text += ";Step_2202:;Count for ;I_FAMS     ;" + _pelist.Count(a => a.I_FAMS != isEmptyString) + _newline; ;
+                _info_0_text += ";Step_2202:;Count for ;F_HUSB     ;" + _famlist.Count(a => a.F_HUSB != isEmptyString) + _newline; ;
+                _info_0_text += ";Step_2202:;Count for ;F_WIFE     ;" + _famlist.Count(a => a.F_WIFE != isEmptyString) + _newline; ;
+                _info_0_text += ";Step_2202:;Count for ;F_MARR_DATE;" + _famlist.Count(a => a.F_MARR_DATE != isEmptyString) + _newline; ;
+                _info_0_text += ";Step_2202:;Count for ;F_MARR_PLAC;" + _famlist.Count(a => a.F_MARR_PLAC != isEmptyString) + _newline; ;
+                _info_0_text += ";Step_2202:;Count for ;F_MARR_NOTE;" + _famlist.Count(a => a.F_MARR_NOTE != isEmptyString) + _newline; ;
+                _info_0_text += ";Step_2202:;Count for ;I_BIRT_NOTE;" + _pelist.Count(a => a.I_BIRT_NOTE != isEmptyString) + _newline; ;
+                _info_0_text += ";Step_2202:;Count for ;I_DEAT_NOTE;" + _pelist.Count(a => a.I_DEAT_NOTE != isEmptyString) + _newline; ;
 
-                Console.WriteLine(_newline + _newline + _info_0_text + _newline);
-                _info_new = new("INFO;", ";", _info_0_text);
-                _info_list.Add(_info_new);
+                _info_0_text = "no counting";
+                Xwrite("Step_2202", true, _count + _newline + _info_0_text + _newline);
+                //Console.WriteLine(_newline + _newline + _info_0_text + _newline);
+                //_info_new = new("INFO;", ";", _info_0_text);
+                //_info_list.Add(_info_new);
 
 
             }
@@ -1069,15 +1097,20 @@ class A00_Code
             // end of reading
 
 
-            _info_0_text = "___________________________________________________start;" + _start_time_global + ";now;" + DateTime.Now + "_slow;" + _slow + ";begin of Populate PersLineList";
-            Console.WriteLine(_info_0_text);
-            _info_new = new("INFO;", ";", _info_0_text);
-            _info_list.Add(_info_new);
+            _info_0_text = ";start;" + _start_time_global /*+ ";now;"  + "_slow;" + _slow */
+                + ";begin of Populate PersLineList" + _newline;
+
+            Xwrite("Step_1102", true, _count + _info_0_text);
+            //Console.WriteLine(_info_0_text);
+            //_info_new = new("INFO;", ";", _info_0_text);
+            //_info_list.Add(_info_new);
 
             ht = "_";
             for (int i = 0; i < _pelist.Count; i++)
             {
-
+                _info_0_text = ";start;" + _start_time_global /*+ ";now;"  + "_slow;" + _slow */
+    + ";begin of Populate PersLineList";
+                Xwrite("Step_1602", true, i + " > " + _info_0_text);
 
                 _persLineHint = "";
 
@@ -1118,33 +1151,35 @@ class A00_Code
                 //AddPersLine(_pelist[i].AA_I_INDEX, _persLineText, _persLineHint);
                 //                    public void AddPersLine(string persLine, string persCategory, string persText)
                 //{
-                PersLine persLineNew = new(_pelist[i].AA_I_INDEX, _persLineText, _persLineHint);
+                PersLine _persLineNew = new(_pelist[i].AA_I_INDEX, _persLineText, _persLineHint);
                 //persLine
                 //, persCategory
                 //, persText
                 //);
-                _persLineList.Add(persLineNew);
+                _persLineList.Add(_persLineNew);
                 //}
 
                 _dateString = ";;;;;";
 
                 //1 _UPD 15 DEC 2019
-                string updString = "1 _UPD 31 DEC 9999";
-                if (_pelist[i].I_UPD.Length > 12)
-                {
-                    updString = GetUpdateString("x _UPD " + _pelist[i].I_UPD);  // length must be more than 11
-                }
-                else
-                {
-                    updString = "x _UPD 31 DEC 9999";
-                }
+                string _update_string = "1 _UPD 31 DEC 9999";
+                _comment_inside_code = "string _update_string = \"1 _UPD 31 DEC 9999\";" + _update_string;
 
-                if (updString != "0;not 4,8,10,11;;")
-                {
-                    //AddUpdateLine(updString, "INDI", _persLineText);
-                    Updates updatesNew = new(updString, "INDI", _persLineText);
-                    _updateslist.Add(updatesNew);
-                }
+                //if (_pelist[i].I_UPD.Length > 12)
+                //{
+                //    _update_string = GetUpdateString("x _UPD " + _pelist[i].I_UPD);  // length must be more than 11
+                //}
+                //else
+                //{
+                //    _update_string = "x _UPD 31 DEC 9999";
+                //}
+
+                //if (_update_string != "0;not 4,8,10,11;;")
+                //{
+                //    //AddUpdateLine(_update_string, "INDI", _persLineText);
+                //    Updates updatesNew = new(_update_string, "INDI", _persLineText);
+                //    _updateslist.Add(updatesNew);
+                //}
 
 
                 //CheckBox for empty birth date - OFF
@@ -1173,7 +1208,7 @@ class A00_Code
 
                 if (_pelist[i].I_BIRT != " ")
                 {
-                    _date = "," + _pelist[i].I_BIRT_DATE;
+                    //_date = "," + _pelist[i].I_BIRT_DATE;
                     //_dateString = ";;;;;";
                     if (_pelist[i].I_BIRT_DATE != " ")
                         _dateString = GetDateString(_pelist[i].I_BIRT_DATE);
@@ -1187,13 +1222,15 @@ class A00_Code
                     _year = _dateColl[5];
 
                     _kind = "1-BIRTH";
-                    _event_new = new(0, _day, _month, _year, _date_val, _date, _kind, _dio, _cb, _place, _pelist[i].AA_I_INDEX, _pelist[i].I_SEX, _persLineText);
+                    _event_new = new(0, _day, _month, _year, _date_val
+                        , "," + _pelist[i].I_BIRT_DATE, _kind, _dio, _cb, _place
+                        , _pelist[i].AA_I_INDEX, _pelist[i].I_SEX, _persLineText);
                     _eventList.Add(_event_new);
 
                     if (_pelist[i].I_DEAT != " ")
                     {
                         _date = "," + _pelist[i].I_DEAT_DATE;
-                        _dateString = (string)GetDateString(_pelist[i].I_DEAT_DATE);
+                        _dateString = GetDateString(_pelist[i].I_DEAT_DATE);
 
                         _deathdateString = _dateString;
                         _place = _pelist[i].I_DEAT_PLAC;
@@ -1220,7 +1257,7 @@ class A00_Code
 
                     if (_pelist[i].I_BURI != " ")
                     {
-                        _date = "," + _pelist[i].I_BURI_DATE;
+                        //_date = "," + _pelist[i].I_BURI_DATE;
                         _dateString = GetDateString(_pelist[i].I_BURI_DATE);
                         if (_dateString == " ")
                         {
@@ -1245,24 +1282,32 @@ class A00_Code
                         }
 
                         _kind = "9-buried";
-                        _event_new = new(0, _day, _month, _year, _date_val, _date, _kind, _dio, _cb, _place, _pelist[i].AA_I_INDEX, _pelist[i].I_SEX, _persLineText);
+                        _event_new = new(0, _day, _month, _year, _date_val
+                            , _date = "," + _pelist[i].I_BURI_DATE, _kind, _dio, _cb, _place
+                            , _pelist[i].AA_I_INDEX, _pelist[i].I_SEX, _persLineText)
+                            ;
                         _eventList.Add(_event_new);
                     }
                 }
                 ht = "#";
-
-
-                _info_0_text = "___________________________________________________start;" + _start_time_global + ";now;" + DateTime.Now + "_slow;" + _slow + ";end   of Populate PersLineList: " + _persLineList.Count;
-                Console.WriteLine(_info_0_text);
-                _info_new = new("INFO;", ";", _info_0_text);
-                _info_list.Add(_info_new);
-
-                _info_0_text = "___________________________________________________start;" + _start_time_global + ";now;" + DateTime.Now + "_slow;" + _slow + ";end   of Populate EventList: " + _eventList.Count;
-                Console.WriteLine(_info_0_text);
-                _info_new = new("INFO;", ";", _info_0_text);
-                _info_list.Add(_info_new);
-
             }
+
+
+            _info_0_text = " > start;" + _start_time_global /*+ ";now;" + "_slow;" + _slow */
+            + ";end   of Populate PersLineList: " + _persLineList.Count;
+            Xwrite("Step_2206", true, _count + _info_0_text);
+            //Console.WriteLine(_info_0_text);
+            //    _info_new = new("INFO;", ";", _info_0_text);
+            //    _info_list.Add(_info_new);
+
+            _info_0_text = " > start;" + _start_time_global /*+ ";now;" + "_slow;" + _slow */
+            + ";end   of Populate EventList: " + _eventList.Count;
+            Xwrite("Step_2208", true, _count + _info_0_text);
+            //Console.WriteLine(_info_0_text);
+            //    _info_new = new("INFO;", ";", _info_0_text);
+            //    _info_list.Add(_info_new);
+
+
             Xwrite("Step_2202", true, _count + _newline + " > DoReplace_stuff ");
 
             SaveInfo(_path, "__ged_IN_info.txt");
@@ -1276,7 +1321,9 @@ class A00_Code
 
             Console.ReadLine();
         }
-        _info_0_text = "endofMain";
+        _comment_inside_code = "end of > if (_pelist.Count > 0)";
+
+        _comment_inside_code = "endofMain";
     }
 
 
@@ -1286,7 +1333,7 @@ class A00_Code
         //Debugger.Break();
         //try
         //{
-        //_start_time = DateTime.Now;
+        //_start_time_global = DateTime.Now;
         // run processing on background thread and get processed lines
 
 
@@ -1309,7 +1356,7 @@ class A00_Code
 
             if (_count > _nextGoalOfLines)
             {
-                _info_0_text = " autosav > " + _count.ToString() + ":_start=;" + _start_time;
+                _info_0_text = " autosav > " + _count.ToString() + ":_start=;" + _start_time_global;
                 Xwrite("Step_1800", true, _info_0_text);
 
                 _nextGoalOfLines += 1000000;
@@ -1325,7 +1372,7 @@ class A00_Code
         //}
         //catch (Exception ex)
         //{
-        //    _info_0_text = DateTime.Now + " > Error: " + ex.Message;
+        //    _info_0_text = " > Error: " + ex.Message;
         //    Xwrite("Step_9900", true, _count + _newline + " > DoReplace_stuff ");
         //    Debugger.Break();
         //}
@@ -1422,10 +1469,11 @@ class A00_Code
 
     private static string GetDateString(string dateIN)
     {
-        int _slow = 8;
+        //int _slow = 8;
+        _comment_inside_code = "dateIN is e.g. 29.03.1969;";
         int _count = 0;
         bool bool_getDateValue = false;
-        string _info_text;// = "";
+        //string _info_0_text;// = "";
         string ValDateString = "0";
         //if (dateIN.Contains("x")) //-TURNEDOFF"))
 #pragma warning disable IDE0059 // Unnecessary assignment of a value
@@ -1438,15 +1486,17 @@ class A00_Code
 
         if (dateIN.Contains("x-TURNEDOFF"))
         {
-            _info_text = _count.ToString() + "date contains 'x';" + dateIN;
-            Console.WriteLine(_info_text);
-            _info_new = new("INFO;", ";", _info_text);
-            _info_list.Add(_info_new);
+            _info_0_text = _count.ToString() + "date contains 'x';" + dateIN;
+            Xwrite("Step_1102", true, _count + _info_0_text);
+            //Console.WriteLine(_info_0_text);
+            //_info_new = new("INFO;", ";", _info_0_text);
+            //_info_list.Add(_info_new);
 
-            _info_text = _count.ToString() + "date contains 'x';" + dateIN;
-            Console.WriteLine(_info_text);
-            _info_new = new("INFO;", ";", _info_text);
-            _info_list.Add(_info_new);
+            _info_0_text = _count.ToString() + "date contains 'x';" + dateIN;
+            Xwrite("Step_1102", true, _count + _info_0_text);
+            //Console.WriteLine(_info_0_text);
+            //_info_new = new("INFO;", ";", _info_0_text);
+            //_info_list.Add(_info_new);
             //AddError(_count.ToString(), "date contains 'x';", dateIN);
             //_lineString = _lineString.Replace("&nbsp;", " ");
         }
@@ -1458,7 +1508,7 @@ class A00_Code
         string year = "";
         //string 
         string dateOUT = ";;";
-        string separator = ";";
+        //string separator = ";";
         dateIN = dateIN.Replace("ABT ", "");
         dateIN = dateIN.Replace("BEF ", "");
         dateIN = dateIN.Replace("CALC ", "");
@@ -1466,88 +1516,100 @@ class A00_Code
         dateIN = dateIN.Replace("ca. ", "");
         dateIN = dateIN.Replace("ca.", "");
 
-        dateIN = dateIN.Replace(" Januar ", " JAN ");
-        dateIN = dateIN.Replace(" Februar ", " FEB ");
-        dateIN = dateIN.Replace(" März ", " MAR ");
-        dateIN = dateIN.Replace(" April ", " APR ");
-        dateIN = dateIN.Replace(" Mai ", " MAY ");
-        dateIN = dateIN.Replace(" Juni ", " JUN ");
-        dateIN = dateIN.Replace(" Juli ", " JUL ");
-        dateIN = dateIN.Replace(" August ", " AUG ");
-        dateIN = dateIN.Replace(" September ", " SEP ");
-        dateIN = dateIN.Replace(" Oktober ", " OCT ");
-        dateIN = dateIN.Replace(" November ", " NOV ");
-        dateIN = dateIN.Replace(" Dezember ", " DEC ");
+        //dateIN = dateIN.Replace(" Januar ", " JAN ");
+        //dateIN = dateIN.Replace(" Februar ", " FEB ");
+        //dateIN = dateIN.Replace(" März ", " MAR ");
+        //dateIN = dateIN.Replace(" April ", " APR ");
+        //dateIN = dateIN.Replace(" Mai ", " MAY ");
+        //dateIN = dateIN.Replace(" Juni ", " JUN ");
+        //dateIN = dateIN.Replace(" Juli ", " JUL ");
+        //dateIN = dateIN.Replace(" August ", " AUG ");
+        //dateIN = dateIN.Replace(" September ", " SEP ");
+        //dateIN = dateIN.Replace(" Oktober ", " OCT ");
+        //dateIN = dateIN.Replace(" November ", " NOV ");
+        //dateIN = dateIN.Replace(" Dezember ", " DEC ");
 
 
 
         //int dateIN_Length = dateIN.Length;
 
-        switch (dateIN.Length.ToString())
-        {
-            case "0": break; // Empty
+        _info_0_text = "Length= " + dateIN.Length + ", dateIN= " + dateIN;
+        Xwrite("Step_1702", true, _info_0_text);
 
-            case "12":
+        switch (dateIN.Length)//.ToString())
+        {
+            //case "0": break; // Empty
+            case 0: break; // Empty
+
+            //case "11":
+            case 10:
                 // for some tasks the date comes with leading '0' and leading character e.g. u for _UPD
-                dateIN = dateIN.Substring(1, 11);
-                year = dateIN.Substring(7, 4); month = GetMonthNumeric(dateIN.Substring(3, 3));
+                //dateIN = dateIN.Substring(1, 10);
+                year = dateIN.Substring(6, 4); 
+                month = GetMonthNumeric(dateIN.Substring(3, 3));
                 //day = dateIN.Substring(0, 2);
                 day = dateIN[..2];
-                dateOUT = day + separator + month + separator + year;
+                dateOUT = day + _separator + month + _separator + year;
                 break;
 
-            case "11":
+            //case "10":
+            case 9:
                 //if (dateIN.Length == 11)
                 //{
                 year = dateIN.Substring(7, 4); month = GetMonthNumeric(dateIN.Substring(3, 3));
                 //day = dateIN.Substring(0, 2);
-                day = dateIN[..2];
-                dateOUT = day + separator + month + separator + year;
+                day = dateIN[..1];
+                dateOUT = day + _separator + month + _separator + year;
                 //if (day[..1].Contains("0"))
-                if (day[..1].Contains('0'))
-                {
-                    _info_text = "day contains leading '0';" + dateIN;
-                    Console.WriteLine(_info_text);
-                    _info_new = new("INFO;", ";", _info_text);
-                    _info_list.Add(_info_new);
-                    //_lineString = _lineString.Replace("&nbsp;", " ");
-                    day = "";
-                }
-                ;
+                _comment_inside_code = "day contains leading '0'";
+                //if (day[..1].Contains('0'))
+                //{
+                //    _info_0_text = "day contains leading '0';" + dateIN;
+                //    Console.WriteLine(_info_0_text);
+                //    _info_new = new("INFO;", ";", _info_0_text);
+                //    _info_list.Add(_info_new);
+                //    //_lineString = _lineString.Replace("&nbsp;", " ");
+                //    day = "";
                 //}
+                //;
+                //}eventl
                 break;
 
-            case "10":
+            //case "9":
+            case 8:
                 //if (dateIN.Length == 10)
                 //{
                 year = dateIN.Substring(6, 4); month = GetMonthNumeric(dateIN.Substring(2, 3)); day = dateIN[..1];
-                dateOUT = day + separator + month + separator + year;
+                dateOUT = day + _separator + month + _separator + year;
                 //}
                 break;
 
-            case "9":
+            //case "8":
+            case 7:
                 if (dateIN == "unbekannt" || dateIN == "unbekannt=")
                     dateOUT = "unbekannt";
                 break;
             //{
 
 
-            case "8":
+            //case "7":
+            case 6:
                 //if (dateIN.Length == 8)
                 //{
                 year = dateIN.Substring(4, 4);
                 //month = GetMonthNumeric(dateIN.Substring(0, 3)); 
                 month = GetMonthNumeric(dateIN[..3]); //day = dateIN.[..1];
-                dateOUT = /*day + */separator + month + separator + year;
+                dateOUT = /*day + */_separator + month + _separator + year;
                 //}
                 break;
 
-            case "4":
+            //case "4":
+            case 4:
                 //if (dateIN.Length == 4)
                 //{
                 //year = dateIN.Substring(0, 4); 
                 year = dateIN[..4];
-                dateOUT = /*day +*/ separator + /*month +*/ separator + year;
+                dateOUT = /*day +*/ _separator + /*month +*/ _separator + year;
                 //}
                 break;
             default:
@@ -1559,15 +1621,13 @@ class A00_Code
 
         if (_slow > 12 && dateOUT.Contains("not"))
         {
-            _info_text = "dateOUT contains 'not';" + dateIN;
-            Console.WriteLine(_info_text);
-            _info_new = new("INFO;", ";", _info_text);
-            _info_list.Add(_info_new);
+            _info_0_text = "dateOUT contains 'not';" + dateIN;
+            Xwrite("Step_1502", true, _count + _info_0_text);
             //_lineString = _lineString.Replace("&nbsp;", " ");
         }
 
 
-        if (bool_getDateValue == true && _slow > 0 && year != "")
+        if (bool_getDateValue == true && _slow > 9 && year != "")
             try
             {
                 float valYear = 0f;
@@ -1621,7 +1681,12 @@ class A00_Code
                 ValDateString = "nv;nv;nv";
             }
 
-        return /*separator + */ValDateString + separator + dateOUT;
+        if (ValDateString == "0")
+        {
+            ValDateString = "nv;nv;nv";
+        }
+
+        return /*separator + */ValDateString + _separator + dateOUT;
     }
 
     public static string GetMonthNumeric(string month)
@@ -1666,11 +1731,11 @@ class A00_Code
         try
         {
 
-#pragma warning disable CA1416 // Validate platform compatibility > only Windows supports System.Media.SoundPlayer, no other OS
+            //#pragma warning disable CA1416 // Validate platform compatibility > only Windows supports System.Media.SoundPlayer, no other OS
 
             using var player = new SoundPlayer(@"C:\\DB\\sound001.wav");
             player.PlaySync();
-#pragma warning restore CA1416 // Validate platform compatibility
+            //#pragma warning restore CA1416 // Validate platform compatibility
             //Console.WriteLine("\nSound abgespielt!");
         }
         catch
@@ -1760,6 +1825,9 @@ class A00_Code
         lineString = lineString.Replace(" OCT ", ".10.");
         lineString = lineString.Replace(" NOV ", ".11.");
         lineString = lineString.Replace(" DEC ", ".12.");
+
+        _comment_inside_code = "add missing blank after DATE for e.g. ABT 10.1984";
+        lineString = lineString.Replace("DATE.", "DATE .");
 
         //_line_string = _line_string.Replace(". JAN ", ".01.");
         //_line_string = _line_string.Replace(". FEB ", ".02.");
@@ -2009,16 +2077,10 @@ class A00_Code
     {
         var result = new List<string>();
 
-        //string _nowREAD;
-        //string _info_0_text;// = _nowREAD;
-        //string _comment_inside_code = "";
-        _info_0_text = DateTime.Now + " > starting >> input: " + path + file + extension;
-        Console.WriteLine(_info_0_text);
-        _info_new = new("INFO;", ";", _info_0_text);
-        _info_list.Add(_info_new);
-        //_info_new = new("INFO;", ";", _info_0_text);
+        _info_0_text = " > starting >> input: " + path + file + extension;
+        Xwrite("Step_1202", true, _info_0_text);
 
-        DateTime _start_time = DateTime.Now;
+        //DateTime _start_time_global = DateTime.Now;
         int lastPeListIndex = 0;
         int _count = 0;
         _nextGoalOfLines = 1000000 - 2;
@@ -2027,9 +2089,7 @@ class A00_Code
         if (!File.Exists(fullPath))
         {
             _info_0_text = "Input-File not found >> " + path + file + extension;
-            Console.WriteLine(_info_0_text);
-            _info_new = new("INFO;", ";", _info_0_text);
-            _info_list.Add(_info_new);
+            Xwrite("Step_1111", true, _count + _info_0_text);
             //_ = MessageBox.Show("Input-File not found", "BEWARE", MessageBoxButtons.OK);
             //return result;
         }
@@ -2047,7 +2107,7 @@ class A00_Code
                 _count++;
                 if (_count > _nextGoalOfLines)
                 {
-                    _info_0_text = " reading > " + _count.ToString() + ":_start=;" + _start_time;
+                    _info_0_text = " reading > " + _count.ToString() + ":_start=;" + _start_time_global;
                     Xwrite("Step_1100", true, _info_0_text);
                     _nextGoalOfLines += 1000000;
                 }
@@ -2312,19 +2372,19 @@ class A00_Code
             , string i_prin
             //, string i_nati
 
-            , string i_obje
+            //, string i_obje
             //, string i_obje_form
             , string i_obje_file
-            , string i_obje_titl
-            , string i_obje_note
-            //, string i_obje__prim
-            //, string i_obje__cutout
-            //, string i_obje__parentrin
-            //, string i_obje__personalphoto
-            //, string i_obje__photo_rin
-            //, string i_obje__position
-            , string i_obje__dat
-            , string i_obje__alb
+    //, string i_obje_titl
+    //, string i_obje_note
+    //, string i_obje__prim
+    //, string i_obje__cutout
+    //, string i_obje__parentrin
+    //, string i_obje__personalphoto
+    //, string i_obje__photo_rin
+    //, string i_obje__position
+    //, string i_obje__dat
+    //, string i_obje__alb
     //, string i_obje__alb
     // 70
 
@@ -2432,19 +2492,19 @@ class A00_Code
         public string I_RESI_PHON = i_resi_phon;
         public string I_EMAIL = i_email;
         //public string I_NATI;
-        public string I_OBJE = i_obje;
+        //public string I_OBJE = i_obje;
         //public string I_OBJE_FORM;
         public string I_OBJE_FILE = i_obje_file;
-        public string I_OBJE_TITL = i_obje_titl;
-        public string I_OBJE_NOTE = i_obje_note;
+        //public string I_OBJE_TITL = i_obje_titl;
+        //public string I_OBJE_NOTE = i_obje_note;
         //public string I_OBJE__PRI;
         //public string I_OBJE__CUT;
         //public string I_OBJE__PAR;
         //public string I_OBJE__PER;
         //public string I_OBJE__PHO;
         //public string I_OBJE__POS;
-        public string I_OBJE__DAT = i_obje__dat;
-        public string I_OBJE__ALB = i_obje__alb;
+        //public string I_OBJE__DAT = i_obje__dat;
+        //public string I_OBJE__ALB = i_obje__alb;
     }
 
     public class Event(
