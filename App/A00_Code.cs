@@ -47,9 +47,11 @@ class A00_Code
     //private static bool boolSaveSingleEntry;
     private static int _count;
     private static int z_nextGoalOfLines = -1;
-    private static int z_lastPeListIndex_DONE = -1;
+
     private static readonly int z_slow = 8;
+
     private static readonly int z_lastPeListIndex = -1;
+    private static int z_lastPeListIndex_DONE = -1;
     //private static readonly int unknownKeyCount = 0;
     private static readonly string z_newline = Environment.NewLine;
     private static readonly string z_separator = ";";
@@ -59,7 +61,7 @@ class A00_Code
     private static string _comment_inside_code = "";
     private static string _info_0_text = "";
     //private static string gedheadText = "";
-    private static readonly string z_ht = " # ";
+    //private static readonly string z_ht = " # ";
     private static readonly string z_tab = "\t";
     private static readonly string z_semicolon = ";";
     private static string z_key = "";
@@ -608,10 +610,10 @@ class A00_Code
         //_line_string = _line_string.Replace("/", "");
 
         _line_string = _line_string.Replace("&gt;", ">");
-        _line_string = _line_string.Replace("&auml;", "ä");
-        _line_string = _line_string.Replace("&ouml;", "ö");
-        _line_string = _line_string.Replace("&uuml;", "ü");
-        _line_string = _line_string.Replace("&szlig;", "ß");
+        //_line_string = _line_string.Replace("&auml;", "ä");
+        //_line_string = _line_string.Replace("&ouml;", "ö");
+        //_line_string = _line_string.Replace("&uuml;", "ü");
+        //_line_string = _line_string.Replace("&szlig;", "ß");
         _line_string = _line_string.Replace("&amp;", "=");
 
         _line_string = _line_string.Replace(";;;;;", " - ");
@@ -619,7 +621,7 @@ class A00_Code
         _line_string = _line_string.Replace("https://", "");
         _line_string = _line_string.Replace("http://", "");
         _line_string = _line_string.Replace("<p># ", "");
-        _line_string = _line_string.Replace(" GMT -0500", "");
+        //_line_string = _line_string.Replace(" GMT -0500", "");
 
         _line_string = _line_string.Replace("<a href", "");
         _line_string = _line_string.Replace("</a>", "");
@@ -629,12 +631,12 @@ class A00_Code
         _line_string = _line_string.Replace("*", "");
         _line_string = _line_string.Replace(" # ;", ";");
         _line_string = _line_string.Replace("\";\"", ";");
-        _line_string = _line_string.Replace("MH:I", "");
+        //_line_string = _line_string.Replace("MH:I", "");
         _line_string = _line_string.Replace("\"", "");
         _line_string = _line_string.Replace("\";\"", ";");
 
 
-        _line_string = _line_string.Replace("M255-", "M.255-");
+        //_line_string = _line_string.Replace("M255-", "M.255-");
 
         _comment_inside_code = "check for &nbsp; only once per file to save time";
         //bool boolChecknbsp = false;
@@ -1205,11 +1207,11 @@ class A00_Code
             //, string i_conc_plac
 
             , string i_resi   // Residence
-            //, string i_resi_date
-            //, string i_resi_age
-            //, string i_resi_addr
-            //, string i_resi_phon
-            //, string i_email
+                              //, string i_resi_date
+                              //, string i_resi_age
+                              //, string i_resi_addr
+                              //, string i_resi_phon
+                              //, string i_email
 
 
             , string i_sour
@@ -1462,7 +1464,6 @@ class A00_Code
     }
     static async Task Main()
     {
-        //var p = new A00_Code();
         string _path = "C:/DB/";
         string _read_file = "__ged_IN";
         string _extension = ".ged";
@@ -1471,21 +1472,26 @@ class A00_Code
         string z_1 = "";
         string z_2 = "";
         //private static 
-        bool _bool_sex_u = false;
+        //bool _bool_sex_u = false;
         //bool bool_nbsp = false;
         //bool boolChecknbsp = false;
         //bool boolCheckUnklar = false;
         //bool boolSaveSingleEntry = false;
+        //string z_blank = "";
+        //string _secondblankOrEnd;
         string unknownKeyText = "unknown";
         string gedheadText = "";
-        //string z_blank = "";
+
         string _first = "";
         string _update_string = "";
         string _source_string = "";
         string _entry_text = "";
         int secondblankOrEnd = 0;
         z_nextGoalOfLines = _count + 1;
-        //string _secondblankOrEnd;
+
+        int _pe_list_index = -1;
+        int _fam_list_index = -1;
+
         string _date;
         string _place;
         string _dio = "";
@@ -1501,7 +1507,7 @@ class A00_Code
         string _month;
         string _year;
 
-        string _immi_text;
+        string _immi_text = "";
         //string _kind;
         string _date_val;
         string _deathdateString = "";
@@ -1518,7 +1524,7 @@ class A00_Code
 
         string _pers_line_hint;
 
-        string _dateString;
+        string _dateString = _entry_text + _immi_text;
         //string _line_string = "";
         z_blank = "";
         //List<PersLine> _persLineList = [];
@@ -1578,8 +1584,9 @@ class A00_Code
             //_comment_inside_code = "if (_count > z_nextGoalOfLines)";
 
             _first = _line_string[..1];//.ToString();
+            _ = int.TryParse(_first, out int _first_int);
 
-            if (_first == "0" && _count > z_nextGoalOfLines)
+            if (_first_int == 0 && _count > z_nextGoalOfLines)
             {
                 _info_0_text = "Step_1400 > " + DateTime.Now
                     + " > " + z_nextGoalOfLines / 1000 + " TSD > Line= > " + _line_string + "           > Orig.= > " + _line;
@@ -1627,19 +1634,17 @@ class A00_Code
 
             if (_first != "0")
             {
-                _entry_text += keyPrevious_pe + ";" + _line_string + " > ";
+                //_entry_text += keyPrevious_pe + ";" + _line_string + " > ";
             }
 
             _comment_inside_code = "firstchar=0";
-            if (_first == "0")
+            if (_first_int == 0)
             {
 
                 // Works
-                _info_0_text = "Step_0123:; " + DateTime.Now
-                    + " > _entry_text= "
-                    /*+ z_newline*/ + _entry_text
-                    ;
-                Trace.WriteLine(_info_0_text);
+
+
+                _entry_text = "";
                 //Console.WriteLine("keyPrevious {0}, _entry_text {1}, _update_string {2}, _source_string {3}", 
                 //    keyPrevious_pe, _entry_text, _update_string, _source_string);
 
@@ -1665,7 +1670,7 @@ class A00_Code
 
 
 
-                _entry_text = "";
+
 
 
                 //int _first_blank = 1;
@@ -1723,7 +1728,7 @@ class A00_Code
                 // 1 SEX M
 
 
-                // _first == "0"
+                // _first_int == 0"
 
                 if (_line_string.Substring(2, 4).ToString() == "HEAD")
                 {
@@ -1876,6 +1881,16 @@ class A00_Code
                     //continue;
                 }
             }
+            //if (_first_int == 0)
+            //{
+            //    _value = _value.Replace("=-", "-");
+            //    //Console.Xwrite("adding keyPrevious = {0}: {1}" + z_newline, keyPrevious, _value);
+            //    //Console.Xwrite("adding keyPrevious = {0}" + z_newline, keyPrevious);
+            //    //_db.Add(keyPrevious, _value);
+            //    //dataGridView1.Rows.Add(keyPrevious, _value);
+            //    _value = "";
+                z_lastPeListIndex_DONE = z_lastPeListIndex - 1;
+            //}
             _comment_inside_code = "End of:  if (_first == 0";
 
 
@@ -1891,8 +1906,13 @@ class A00_Code
             //    _fam_index.Add(_fam_list[i].AA_F_INDEX, i);
             //}
 
-            int _pe_list_index = _pe_list.FindIndex(item => item.AA_I_INDEX == keyPrevious_indi);
-            int xy = _pe_index.GetValueOrDefault(keyPrevious_indi, -1);
+            if (_first_int == 0)
+            {
+                //_pe_list_index = _pe_list.FindIndex(item => item.AA_I_INDEX == keyPrevious_indi);
+            //int _fam_list_index = _fam_list.FindIndex(item => item.AA_F_INDEX == keyPrevious_fam);
+                _pe_list_index = _pe_index.GetValueOrDefault(keyPrevious_indi, -1);
+                _fam_list_index = _fam_index.GetValueOrDefault(keyPrevious_indi, -1);
+            }
             //if (_pe_index.TryGetValue(keyPrevious_pe, out int value_pe))
             //{
             //    _pe_list_index = value_pe;
@@ -1907,7 +1927,7 @@ class A00_Code
             //_pe_index.Add(_pe_list[_pe_list_index].AA_I_INDEX, _pe_list_index);
             int lastPeListIndex = _pe_list_index;
             //int z_lastPeListIndex_DONE;
-            int _famlistIndex = _fam_list.FindIndex(item => item.AA_F_INDEX == keyPrevious_fam);
+
             //_fam_index.Add(_fam_list[_pe_list_index].AA_F_INDEX, _pe_list_index);
             //int notelistIndex = z_note_list.FindIndex(item => item.AA_N_INDEX == keyPrevious_note);
             int notelistIndex = 0;
@@ -1918,8 +1938,8 @@ class A00_Code
             //_pe_list.Add(peNew);
 
 
-            //#region _first == "1"
-            if (_first == "1")
+            //#region _first_int == 1"
+            if (_first_int == 1)
             {
                 if (_line_string.Length > 5)
                     z_1 = z_0 + _line_string.Substring(2, 4).Trim(); // + z_separator;
@@ -1953,18 +1973,18 @@ class A00_Code
                 switch (z_1)
                 {
                     // FAM
-                    case "F_HUSB": _fam_list[_famlistIndex].F_HUSB = DoCleanID(_valueAdd); break;
-                    case "F_WIFE": _fam_list[_famlistIndex].F_WIFE = DoCleanID(_valueAdd); break;
-                    case "F_RIN": /*_fam_list[_famlistIndex].F_RIN = _valueAdd;*/ break;
-                    case "F__UID": /*_fam_list[_famlistIndex].F__UID = _valueAdd;*/ break;
-                    case "F_CHIL": _fam_list[_famlistIndex].F_CHIL += DoCleanID(_valueAdd) + " # "; break;
-                    case "F__UPD": _fam_list[_famlistIndex].F__UPD = _valueAdd; break;
-                    case "F_MARR": _fam_list[_famlistIndex].F_MARR = _valueAdd; break;
-                    case "F_MARL": _fam_list[_famlistIndex].F_MARL = _valueAdd; break;  // Hochzeit Standesamt
-                    case "F_DIV": _fam_list[_famlistIndex].F_DIV = _valueAdd; break;  // Divorce
-                    case "F_ENGA": _fam_list[_famlistIndex].F_ENGA = _valueAdd; break; // Verlobung
-                    case "F_ANUL": _fam_list[_famlistIndex].F_ANUL = _valueAdd; break;
-                    case "F_EVEN": _fam_list[_famlistIndex].F_EVEN = _valueAdd; break;
+                    case "F_HUSB": _fam_list[_fam_list_index].F_HUSB = DoCleanID(_valueAdd); break;
+                    case "F_WIFE": _fam_list[_fam_list_index].F_WIFE = DoCleanID(_valueAdd); break;
+                    case "F_RIN": /*_fam_list[_fam_list_index].F_RIN = _valueAdd;*/ break;
+                    case "F__UID": /*_fam_list[_fam_list_index].F__UID = _valueAdd;*/ break;
+                    case "F_CHIL": _fam_list[_fam_list_index].F_CHIL += DoCleanID(_valueAdd) + " # "; break;
+                    case "F__UPD": _fam_list[_fam_list_index].F__UPD = _valueAdd; break;
+                    case "F_MARR": _fam_list[_fam_list_index].F_MARR = _valueAdd; break;
+                    case "F_MARL": _fam_list[_fam_list_index].F_MARL = _valueAdd; break;  // Hochzeit Standesamt
+                    case "F_DIV": _fam_list[_fam_list_index].F_DIV = _valueAdd; break;  // Divorce
+                    case "F_ENGA": _fam_list[_fam_list_index].F_ENGA = _valueAdd; break; // Verlobung
+                    case "F_ANUL": _fam_list[_fam_list_index].F_ANUL = _valueAdd; break;
+                    case "F_EVEN": _fam_list[_fam_list_index].F_EVEN = _valueAdd; break;
 
                     // SOURCE
                     case "S_AUTH": z_source_list[sourcelistIndex].S_AUTH = _valueAdd; break;
@@ -2074,8 +2094,8 @@ class A00_Code
 
                     case "I_OBJE": /*_pe_list[_pe_list_index].I_OBJE = _valueAdd;*/ break;
 
-                    //case "I_MARR": _pe_list[_famlistIndex].I_MARR = _valueAdd; break;
-                    //case "I_DIV ": _pe_list[_famlistIndex].I_DIV = _valueAdd; break;
+                    //case "I_MARR": _pe_list[_fam_list_index].I_MARR = _valueAdd; break;
+                    //case "I_DIV ": _pe_list[_fam_list_index].I_DIV = _valueAdd; break;
                     //case "I_NATI": _pe_list[_pe_list_index].I_NATI = _valueAdd; break;
 
                     default:
@@ -2123,12 +2143,12 @@ class A00_Code
                 //_valueAdd = "";
             }
             _comment_inside_code = "End of:  if (_first == 1";
-            // end of : if (_first == "1")
+            // end of : if (_first_int == 1")
             //#endregion _first = 1
 
             //#region _first = 2
-            //_first == "2"
-            if (_first == "2")
+            //_first_int == 2"
+            if (_first_int == 2)
             {
                 z_2 = _line_string.Substring(2, 4);
 
@@ -2155,33 +2175,33 @@ class A00_Code
                 switch (v0v1v2)
                 {
                     // FAM
-                    case "F_F_MARR_DATE": _fam_list[_famlistIndex].F_MARR_DATE = _valueAdd; break;
-                    case "F_F_MARR_PLAC": _fam_list[_famlistIndex].F_MARR_PLAC = _valueAdd; break;
-                    case "F_F_MARR_NOTE": _valueAdd = _valueAdd.Replace(",", "#"); _fam_list[_famlistIndex].F_MARR_NOTE = _valueAdd; break;
-                    case "F_F_MARR__UID": /*_fam_list[_famlistIndex].F_MARR__UID = _valueAdd;*/ break;
-                    case "F_F_MARR_RIN ": /*_fam_list[_famlistIndex].F_MARR_RIN = _valueAdd;*/ break;
-                    case "F_F_EVEN_TYPE": _fam_list[_famlistIndex].F_EVEN_TYPE = _valueAdd; break;
-                    case "F_F_EVEN_DATE": _fam_list[_famlistIndex].F_EVEN_DATE = _valueAdd; break;
-                    case "F_F_EVEN_PLAC": _fam_list[_famlistIndex].F_EVEN_PLAC = _valueAdd; break;
-                    case "F_F_EVEN__UID": /*_fam_list[_famlistIndex].F_EVEN__UID = _valueAdd;*/ break;
-                    case "F_F_EVEN_RIN ": /*_fam_list[_famlistIndex].F_EVEN_RIN = _valueAdd;*/ break;
-                    case "F_F_EVEN_NOTE": _fam_list[_famlistIndex].F_EVEN_NOTE = _valueAdd; break;
+                    case "F_F_MARR_DATE": _fam_list[_fam_list_index].F_MARR_DATE = _valueAdd; break;
+                    case "F_F_MARR_PLAC": _fam_list[_fam_list_index].F_MARR_PLAC = _valueAdd; break;
+                    case "F_F_MARR_NOTE": _valueAdd = _valueAdd.Replace(",", "#"); _fam_list[_fam_list_index].F_MARR_NOTE = _valueAdd; break;
+                    case "F_F_MARR__UID": /*_fam_list[_fam_list_index].F_MARR__UID = _valueAdd;*/ break;
+                    case "F_F_MARR_RIN ": /*_fam_list[_fam_list_index].F_MARR_RIN = _valueAdd;*/ break;
+                    case "F_F_EVEN_TYPE": _fam_list[_fam_list_index].F_EVEN_TYPE = _valueAdd; break;
+                    case "F_F_EVEN_DATE": _fam_list[_fam_list_index].F_EVEN_DATE = _valueAdd; break;
+                    case "F_F_EVEN_PLAC": _fam_list[_fam_list_index].F_EVEN_PLAC = _valueAdd; break;
+                    case "F_F_EVEN__UID": /*_fam_list[_fam_list_index].F_EVEN__UID = _valueAdd;*/ break;
+                    case "F_F_EVEN_RIN ": /*_fam_list[_fam_list_index].F_EVEN_RIN = _valueAdd;*/ break;
+                    case "F_F_EVEN_NOTE": _fam_list[_fam_list_index].F_EVEN_NOTE = _valueAdd; break;
                     // MARL
-                    case "F_F_MARL_DATE": _fam_list[_famlistIndex].F_MARL_DATE = _valueAdd; break;
-                    case "F_F_MARL_PLAC": _fam_list[_famlistIndex].F_MARL_PLAC = _valueAdd; break;
-                    case "F_F_MARL_NOTE": _fam_list[_famlistIndex].F_MARL_NOTE = _valueAdd; break;
+                    case "F_F_MARL_DATE": _fam_list[_fam_list_index].F_MARL_DATE = _valueAdd; break;
+                    case "F_F_MARL_PLAC": _fam_list[_fam_list_index].F_MARL_PLAC = _valueAdd; break;
+                    case "F_F_MARL_NOTE": _fam_list[_fam_list_index].F_MARL_NOTE = _valueAdd; break;
                     // DIV
-                    case "F_F_DIV_DATE": _fam_list[_famlistIndex].F_DIV_DATE = _valueAdd; break;
-                    case "F_F_DIV_PLAC": _fam_list[_famlistIndex].F_DIV_PLAC = _valueAdd; break;
-                    case "F_F_DIV_NOTE": _fam_list[_famlistIndex].F_DIV_NOTE = _valueAdd; break;
+                    case "F_F_DIV_DATE": _fam_list[_fam_list_index].F_DIV_DATE = _valueAdd; break;
+                    case "F_F_DIV_PLAC": _fam_list[_fam_list_index].F_DIV_PLAC = _valueAdd; break;
+                    case "F_F_DIV_NOTE": _fam_list[_fam_list_index].F_DIV_NOTE = _valueAdd; break;
                     // ENGA
-                    case "F_F_ENGA_DATE": _fam_list[_famlistIndex].F_ENGA_DATE = _valueAdd; break;
-                    case "F_F_ENGA_PLAC": _fam_list[_famlistIndex].F_ENGA_PLAC = _valueAdd; break;
-                    case "F_F_ENGA_NOTE": _fam_list[_famlistIndex].F_ENGA_NOTE = _valueAdd; break;
+                    case "F_F_ENGA_DATE": _fam_list[_fam_list_index].F_ENGA_DATE = _valueAdd; break;
+                    case "F_F_ENGA_PLAC": _fam_list[_fam_list_index].F_ENGA_PLAC = _valueAdd; break;
+                    case "F_F_ENGA_NOTE": _fam_list[_fam_list_index].F_ENGA_NOTE = _valueAdd; break;
                     // ANUL
-                    case "F_F_ANUL_DATE": _fam_list[_famlistIndex].F_ANUL_DATE = _valueAdd; break;
-                    case "F_F_ANUL_PLAC": _fam_list[_famlistIndex].F_ANUL_PLAC = _valueAdd; break;
-                    case "F_F_ANUL_NOTE": _fam_list[_famlistIndex].F_ANUL_NOTE = _valueAdd; break;
+                    case "F_F_ANUL_DATE": _fam_list[_fam_list_index].F_ANUL_DATE = _valueAdd; break;
+                    case "F_F_ANUL_PLAC": _fam_list[_fam_list_index].F_ANUL_PLAC = _valueAdd; break;
+                    case "F_F_ANUL_NOTE": _fam_list[_fam_list_index].F_ANUL_NOTE = _valueAdd; break;
 
                     //    // SOUR
 
@@ -2490,23 +2510,14 @@ class A00_Code
 
         //z_lastPeListIndex_DONE = z_lastPeListIndex;
 
-        // end of : if (_first == "2")
+        // end of : if (_first_int == 2")
         //#endregion _first = 2
 
         //z_lastPeListIndex_DONE = z_lastPeListIndex;
 
 
 
-        if (_first == "0")
-        {
-            _value = _value.Replace("=-", "-");
-            //Console.Xwrite("adding keyPrevious = {0}: {1}" + z_newline, keyPrevious, _value);
-            //Console.Xwrite("adding keyPrevious = {0}" + z_newline, keyPrevious);
-            //_db.Add(keyPrevious, _value);
-            //dataGridView1.Rows.Add(keyPrevious, _value);
-            _value = "";
-            z_lastPeListIndex_DONE = z_lastPeListIndex - 1;
-        }
+
         //z_lastPeListIndex_DONE = z_lastPeListIndex;
 
 
