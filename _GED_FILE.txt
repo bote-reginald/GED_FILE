@@ -3,3 +3,16 @@
             Console.WriteLine(_info_text);
             _info_new = new("INFO;", ";", _info_text);
             _info_list.Add(_info_new);
+
+                    // New Switch
+                    string _out_text = _out_file switch
+        {
+            "C:/DB/_FamLine-out.txt" => "a" + z_newline,
+            "C:/DB/_AlbumLine-out.txt" => "b" + z_newline,
+            _ => "c" + z_newline
+        };
+
+        OLD: switch (switch_on)
+        {
+            default:
+        }
