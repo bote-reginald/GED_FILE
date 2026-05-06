@@ -4,10 +4,14 @@ using System.Diagnostics;
 using System.Media;
 using System.Text;
 using System.Text.RegularExpressions;
+//using System.Windows;
+//using System.Windows.Forms;
 
 class A00_Code
 {
-    private static readonly string z_in_file = "C:/DB/__ged_IN.ged";
+    //private static readonly string z_in_file = "C:/DB/__ged_IN.ged";
+    private static readonly string z_INDI_IN_file = "C:/DB/_3_INDI_IN.ged";
+    private static readonly string z_FAM_IN_file = "C:/DB/_3_FAM_IN.ged";
 
     private static readonly string z_out_file = "C:/DB/__ged_IN-autosave.ged";
     private static readonly string z_out_file_PersLine = "C:/DB/_PersLine-out.txt";
@@ -21,16 +25,25 @@ class A00_Code
 
     private static readonly Dictionary<string, int> _pe1_index = [];
     private static readonly Dictionary<string, int> _pe2_index = [];
+    private static readonly Dictionary<string, int> _pe3_index = [];
+    private static readonly Dictionary<string, int> _pe4_index = [];
     private static readonly Dictionary<string, int> _fam_index = [];
 
 
     private static readonly List<Pe> _pe1_list = [];
-    //private static readonly List<Pe> _pe2_list = [];
+    private static readonly List<Pe> _pe2_list = [];
+    private static readonly List<Pe> _pe3_list = [];
+    private static readonly List<Pe> _pe4_list = [];
+    private static readonly List<Pe> _pe5_list = [];
+    private static readonly List<Pe> _pe6_list = [];
+    private static readonly List<Pe> _pe7_list = [];
+    private static readonly List<Pe> _pe8_list = [];
+    private static readonly List<Pe> _pe9_list = [];
     private static readonly List<Fam> _fam_list = [];
     private static readonly List<Album> z_album_list = [];
-    private static readonly List<Info> z_event_birth_list = [];
+    private static readonly List<Info> z_birth_list = [];
     private static readonly List<Event> z_event_marr_list = [];
-    private static readonly List<Info> z_event_death_list = [];
+    private static readonly List<Info> z_death_list = [];
     private static readonly List<Event> z_event_buri_list = [];
     private static readonly List<Note> z_note_list = [];
     private static readonly List<Source> z_source_list = [];
@@ -83,10 +96,12 @@ class A00_Code
     //private static string z_2 = "";
     private static string z_value = "";
     //private static string _valueAdd = "";
-    private static string z_blank = "";
+    private static string z_blank = " ";
 //#pragma warning disable IDE0044 // Add readonly modifier
     private static bool bool_event_yes = false;
-//#pragma warning restore IDE0044 // Add readonly modifier
+    private static StringBuilder sb = new(200);
+
+    //#pragma warning restore IDE0044 // Add readonly modifier
 
     // Precompiled replacements to speed up Replace_stuff
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "SYSLIB1045:Convert to 'GeneratedRegexAttribute'.", Justification = "<Pending>")]
@@ -288,10 +303,7 @@ class A00_Code
         return secondblankOrEnd;
     }
 
-    private static void N00_see_Main()
-    {
-        z_nextGoalOfLines = _count;
-    }
+
     private static void N11_Save(string v, List<Info> _list, string _out_file)
     {
         StreamWriter _stream_Writer = new(File.Open(_out_file, FileMode.Create), Encoding.UTF8);
@@ -300,11 +312,16 @@ class A00_Code
         _count = -1;
         z_nextGoalOfLines = 50000;
 
+        while (v.Length < 20)
+        {
+            v = " " + v;
+        }
+
         _info_0_text = "Output > " + v;
         string _out_text = _out_file switch
         {
-            "C:/DB/_PersLine-out.txt" => "I_INDI_NR\tNAME\tGIVN\tMARR-NAME\tBIRT_DATE\tBIRT_PLAC\tDEAT_DATE\tDEAT_PLAC\tI_SEX_DEAT\tI_BURI_PLAC\tNAME_NSFX\tFAMC\tFAMS",// + z_newline,
-            "C:/DB/_FamLine-out.txt" => "I_INDI\tHUSB\tWIFE\tMARR_DATE\tMARR_PLAC",// + z_newline, + z_newline,
+            "C:/DB/_PersLine-out.txt" => "LINE\tI_INDI_NR\tNAME\tGIVN\tMARR-NAME\tBIRT_DATE\tBIRT_PLAC\tDEAT_DATE\tDEAT_PLAC\tI_SEX_DEAT\tI_BURI_PLAC\tNAME_NSFX\tFAMC\tFAMS",// + z_newline,
+            "C:/DB/_FamLine-out.txt" => "LINE\tI_INDI\tHUSB\tWIFE\tMARR_DATE\tMARR_PLAC",// + z_newline, + z_newline,
 
             "C:/DB/_Birth+NOTE-out.txt" => "DATE\tWHAT\tI_INDI_NR\tNAME\tGIVN\tMARR-NAME\tBIRT_DATE\tBIRT_PLAC\tDEAT_DATE\tDEAT_PLAC\tI_SEX_DEAT\tI_BURI_PLAC\tNAME_NSFX\tFAMC\tFAMS"
                                         +  "\tBIRT_NOTE\tBIO",// + z_newline, + z_newline,
@@ -328,7 +345,7 @@ class A00_Code
 
             if (_count > z_nextGoalOfLines)
             {
-                _info_0_text = " autosav > " + _count.ToString() + ":_start=;" + z_start_time_global;
+                _info_0_text = " save > " + _count.ToString() + ":_start=;" + z_start_time_global;
                 Xwrite("Step_1800", true, _info_0_text);
 
                 z_nextGoalOfLines += 50000;
@@ -345,10 +362,16 @@ class A00_Code
 
         _stream_Writer.Close();
 
-        _info_0_text = " _out_text " + v + " > " + _count.ToString() + " > FINISHED ";
+        string _count_text = _list.Count.ToString();
+        while (_count_text.Length < 6)
+        {
+            _count_text = " " + _count_text;
+        }
+
+        _info_0_text = " _out_text " + v + " > " + _count_text + " > FINISHED ";
         Xwrite("Step_2500:; (N11_Save) > ", true, _info_0_text);
 
-        _comment_inside_code = "ack to Main()";
+        _comment_inside_code = "back to Main()";
     }
 
     private static void N05_DoAutosave(List<string> _all_lines)
@@ -490,7 +513,7 @@ class A00_Code
     //    Debugger.Break();
     //}
 
-    private static string N77_GetDateString(string _dateIN)
+    private static string N60_GetDateString(string _dateIN)
     {
         //int z_slow = 8;
 
@@ -525,17 +548,20 @@ class A00_Code
         string ValDateString;
         string _date_YYYYMMDD_string;
         //if (_dateIN.Contains("x")) //-TURNEDOFF"))
-#pragma warning disable IDE0059 // Unnecessary assignment of a z_value
-        string dateIN_old = _dateIN;
-#pragma warning restore IDE0059 // Unnecessary assignment of a z_value
+
 
         string day;
         string month;
         string year;
         string _minus_string = "-";
 
+#pragma warning disable IDE0059 // Unnecessary assignment of a z_value
+        string dateIN_old = _dateIN;
+#pragma warning restore IDE0059 // Unnecessary assignment of a z_value
+
         string dateOUT = ";;";
         //string separator = ";";
+        _dateIN = _dateIN.Replace(" DEC ", ".12.");
         _dateIN = _dateIN.Replace("ABT ", "");
         _dateIN = _dateIN.Replace("BEF ", "");
         _dateIN = _dateIN.Replace("CALC ", "");
@@ -543,7 +569,7 @@ class A00_Code
         _dateIN = _dateIN.Replace("ca. ", "");
         _dateIN = _dateIN.Replace("ca.", "");
 
-        _date_YYYYMMDD_string = "nv-nv-nv";
+        _date_YYYYMMDD_string = ",nv-nv-nv";
 
         //_dateIN = _dateIN.Replace(" Januar ", " JAN ");
         //_dateIN = _dateIN.Replace(" Februar ", " FEB ");
@@ -570,28 +596,28 @@ class A00_Code
             case 0: break; // Empty
 
             //case "11":
-            case 10:
+            case 11:
                 // for some tasks the date comes with leading '0' and leading character e.g. u for _UPD
                 //_dateIN = _dateIN.Substring(1, 10);
-                year = _dateIN.Substring(6, 4);
-                month = _dateIN.Substring(3, 2);
+                year = _dateIN.Substring(7, 4);
+                month = _dateIN.Substring(4, 2);
                 //day = _dateIN.Substring(0, 2);
-                day = _dateIN[..2];
+                day = _dateIN.Substring(1, 2);
                 dateOUT = day + z_separator + month + z_separator + year;
                 _date_YYYYMMDD_string = year + _minus_string + month + _minus_string + day;
 
                 break;
 
             //case "10":
-            case 9:
+            case 10:
                 _comment_inside_code = "e.g. 1.07.1970";
                 //if (_dateIN.Length == 11)
                 //{
-                year = _dateIN.Substring(5, 4);
+                year = _dateIN.Substring(6, 4);
                 //month = N76_not_used_GetMonthNumeric(_dateIN.Substring(3, 3));
-                month = _dateIN.Substring(2, 2);
+                month = _dateIN.Substring(3, 2);
                 //day = _dateIN.Substring(0, 2);
-                day = "0" + _dateIN[..1];
+                day = string.Concat("0", _dateIN.AsSpan(1, 1));
                 dateOUT = day + z_separator + month + z_separator + year;
                 _date_YYYYMMDD_string = year + _minus_string + month + _minus_string + day;
                 //if (day[..1].Contains("0"))
@@ -611,13 +637,13 @@ class A00_Code
                 break;
 
             //case "9":
-            case 8:
-                _comment_inside_code = "e.g. 1.07.1970 or > AFT 1856";
+            case 9:
+                _comment_inside_code = "e.g. ,1.07.1970 or > ,AFT 1856";
 
                 if (_dateIN.Contains("AFT") || _dateIN.Contains("BEF") || _dateIN.Contains("ABT"))
                 {
-                    year = _dateIN.Substring(4, 4);
-                    month = _dateIN[..3]; //day = dateIN.[..1];
+                    year = _dateIN.Substring(5, 4);
+                    month = _dateIN.Substring(1, 2); //day = dateIN.[..1];
                     day = "00";
                     dateOUT = /*day + */z_separator + month + z_separator + year;
                     _date_YYYYMMDD_string = year + _minus_string + month + _minus_string + day;
@@ -629,8 +655,8 @@ class A00_Code
                 {
                     _comment_inside_code = "e.g. 1.07.1970";
 
-                    year = _dateIN.Substring(4, 4);
-                    month = _dateIN.Substring(2, 2);
+                    year = _dateIN.Substring(5, 4);
+                    month = _dateIN.Substring(3, 2);
                     day = "0" + _dateIN[..1];
                     dateOUT = day + z_separator + month + z_separator + year;
                     _date_YYYYMMDD_string = year + _minus_string + month + _minus_string + day;
@@ -639,7 +665,7 @@ class A00_Code
             //month = N76_not_used_GetMonthNumeric(_dateIN.Substring(2, 3)); day = _dateIN[..1];
 
             //case "8":
-            case 7:
+            case 8:
                 if (_dateIN == "unbekannt" || _dateIN == "unbekannt=")
                     dateOUT = "unbekannt";
                 break;
@@ -647,7 +673,7 @@ class A00_Code
 
 
             //case "7":
-            case 6:
+            case 7:
                 //if (_dateIN.Length == 8)
                 //{
                 year = _dateIN.Substring(4, 4);
@@ -660,11 +686,12 @@ class A00_Code
                 break;
 
             //case "4":
-            case 4:
+            case 5:
+                _comment_inside_code = "e.g. ,1964";
                 //if (_dateIN.Length == 4)
                 //{
                 //year = _dateIN.Substring(0, 4); 
-                year = _dateIN[..4];
+                year = _dateIN.Substring(1, 4);
                 dateOUT = /*day +*/ z_separator + /*month +*/ z_separator + year;
                 _date_YYYYMMDD_string = year + "-00-00";
                 //}
@@ -1134,11 +1161,11 @@ class A00_Code
     }
 
     // New: Read and process lines without UI calls
-    private static List<string> N01_Read_Input(string path, string file, string extension)
+    private static List<string> N01_Read_Input(/*string path,*/ string file/*, string extension*/)
     {
-        var result = new List<string>();
+        var _result = new List<string>();
 
-        _info_0_text = "starting >> input: " + path + file + extension;
+        _info_0_text = "starting >>>>>>>>>>>>>> input: " /*+ path*/ + file /*+ extension*/;
         Xwrite("Step_1202", true, _info_0_text);
 
         //DateTime z_start_time_global = DateTime.Now;
@@ -1146,13 +1173,13 @@ class A00_Code
         _count = 0;
         z_nextGoalOfLines = 1000000 - 2;
 
-        string fullPath = Path.Combine(path, file + extension);
+        string fullPath = Path.Combine(/*path,*/ file /* +extension*/);
         if (!File.Exists(fullPath))
         {
-            _info_0_text = "Input-File not found >> " + path + file + extension;
+            _info_0_text = "Input-File not found >> " /*+ path + */ + file /*+ extension*/;
             Xwrite("Step_1111", true, _count + _info_0_text);
             //_ = MessageBox.Show("Input-File not found", "BEWARE", MessageBoxButtons.OK);
-            //return result;
+            //return _result;
         }
 
         //db = new Dictionary<string, string>();
@@ -1199,7 +1226,7 @@ class A00_Code
 
                 string key = _count.ToString();
                 //db.Add(z_key, _line);
-                result.Add(_line);
+                _result.Add(_line);
 
                 int lastPeListIndex_DONE = lastPeListIndex - 1;
                 lastPeListIndex = 1 + lastPeListIndex - 1 + 1;
@@ -1215,7 +1242,7 @@ class A00_Code
 
         //_places = new Dictionary<string, int>();
 
-        return result;
+        return _result;
     }
 
     public static string N78_not_used_GetUpdateString(string _upd)
@@ -1238,7 +1265,7 @@ class A00_Code
         // 1 _UPD 15 DEC 2019 07:05:18 GMT+1
         //_upd = "u" + _upd.Substring(7, 11);  // add u before GetDate to avoid contains leading '0'  // yxc
         _upd = string.Concat("u", _upd.AsSpan(7, 11));  // add u before GetDate to avoid contains leading '0'  // yxc
-        _upd = N77_GetDateString(_upd);
+        _upd = N60_GetDateString(_upd);
         //_upd = _upd.Substring(1, _upd.Length - 1);
         _upd = _upd[1..];
         //int sEnd = _upd.Length;
@@ -1725,17 +1752,17 @@ class A00_Code
 
 
 
-            if (_pe1_list[i].I_DEAT == "")
-            {
-                //_deatText = "DEAT N";
-                _pe1_list[i].I_SEX += "a";
-            }
+            //if (_pe1_list[i].I_DEAT == "")
+            //{
+            //    //_deatText = "DEAT N";
+            //    _pe1_list[i].I_SEX += "a";
+            //}
 
-            else
-            {
-                //_deatText = "DEAT Y";
-                _pe1_list[i].I_SEX += "d";
-            }
+            //else
+            //{
+            //    //_deatText = "DEAT Y";
+            //    _pe1_list[i].I_SEX += "d";
+            //}
 
 
 
@@ -1757,28 +1784,28 @@ class A00_Code
             else
                 _famsText = _pe1_list[i].I_FAMS;
 
-            string z_birt_date;// = "," + _pe1_list[i].I_BIRT_DATE;
+            //string z_birt_date;// = "," + _pe1_list[i].I_BIRT_DATE;
             //if (z_birt_date.Length == 9)
-            if (_pe1_list[i].I_BIRT_DATE.Length == 9)
-            {
-                z_birt_date = ",0" + _pe1_list[i].I_BIRT_DATE;
-            }
-            else
-            {
-                z_birt_date = "," + _pe1_list[i].I_BIRT_DATE;
-            }
+            //if (_pe1_list[i].I_BIRT_DATE.Length == 9)
+            //{
+            //    z_birt_date = ",0" + _pe1_list[i].I_BIRT_DATE;
+            //}
+            //else
+            //{
+            //    z_birt_date = "," + _pe1_list[i].I_BIRT_DATE;
+            //}
 
-            string z_deat_date;
-            //z_deat_date = "," + _pe1_list[i].I_DEAT_DATE;
-            //if (z_deat_date.Length == 10)
-            if (_pe1_list[i].I_DEAT_DATE.Length == 9)
-            {
-                z_deat_date = ",0" + _pe1_list[i].I_DEAT_DATE;
-            }
-            else
-            {
-                z_deat_date = "," + _pe1_list[i].I_DEAT_DATE;
-            }
+            //string z_deat_date;
+            ////z_deat_date = "," + _pe1_list[i].I_DEAT_DATE;
+            ////if (z_deat_date.Length == 10)
+            //if (_pe1_list[i].I_DEAT_DATE.Length == 9)
+            //{
+            //    z_deat_date = ",0" + _pe1_list[i].I_DEAT_DATE;
+            //}
+            //else
+            //{
+            //    z_deat_date = "," + _pe1_list[i].I_DEAT_DATE;
+            //}
 
 
             _pers_line_text = "I-" + _pe1_list[i].AA_I_INDEX
@@ -1787,10 +1814,12 @@ class A00_Code
             + z_tab + _pe1_list[i].I_NAME_MARNM
             + z_tab /*+ "," */+ _pe1_list[i].I_NAME_NSFX
 
-            + z_tab + z_birt_date
+            //+ z_tab + z_birt_date
+            + z_tab + _pe1_list[i].I_BIRT_DATE
             + z_tab + _pe1_list[i].I_BIRT_PLAC
             + z_tab + _pe1_list[i].I_SEX
-            + z_tab + z_deat_date
+            //+ z_tab + z_deat_date
+            + z_tab + _pe1_list[i].I_DEAT_DATE
             + z_tab + _pe1_list[i].I_DEAT_PLAC
 
             //+ z_tab + _deatText
@@ -1854,7 +1883,7 @@ class A00_Code
 
             if (bool_event_yes && _pe1_list[i].I_BIRT_DATE != "")
             {
-                _dateString = N77_GetDateString(_pe1_list[i].I_BIRT_DATE);
+                _dateString = N60_GetDateString(_pe1_list[i].I_BIRT_DATE);
                 //_place = _pe1_list[i].I_BIRT_PLAC;
                 //_dio = "";
                 //_cb = _pe1_list[i].I_BIRT_NOTE;
@@ -1877,7 +1906,7 @@ class A00_Code
                                         + z_tab + _pe1_list[i].I_NOTE
 
                     );
-                z_event_birth_list.Add(z_info_new);
+                z_birth_list.Add(z_info_new);
 
             }
 
@@ -1888,7 +1917,7 @@ class A00_Code
                 if (_pe1_list[i].I_DEAT != "" || _pe1_list[i].I_BURI_PLAC != "")
                 {
                     //_date = "," + _pe1_list[i].I_DEAT_DATE;
-                    //_dateString = N77_GetDateString(_pe1_list[i].I_DEAT_DATE);
+                    //_dateString = N60_GetDateString(_pe1_list[i].I_DEAT_DATE);
 
                     //_deathdateString = _dateString;
                     //_place = _pe1_list[i].I_DEAT_PLAC;
@@ -1913,18 +1942,32 @@ class A00_Code
                     //    , _pe1_list[i].AA_I_INDEX, _pe1_list[i].I_SEX, _pers_line_text);
 
                     //z_info_new = new(_year +";"+ _month + ";" + _day + ";", "DEATH", _pers_line_text
-                    _dateString = N77_GetDateString(_pe1_list[i].I_DEAT_DATE);
+                    _dateString = N60_GetDateString(_pe1_list[i].I_DEAT_DATE);
 
                     _dateColl = _dateString.Split(';');
                     _date_val = _dateColl[0];
 
-                    z_info_new = new(_date_val/* + z_tab*/, "DEATH", _pers_line_text
+                    sb = new(_pers_line_text, 128);
+                    //sb.Append(z_tab);
+                    //sb.Append(_pe1_list[i].I_DEAT_NOTE);
+                    //sb.Append(z_tab);
+                    //sb.Append(_pe1_list[i].I_BURI_PLAC);
+                    //sb.Append(z_tab);
+                    //sb.Append(_pe1_list[i].I_DEAT_CAUS);
+
+                    sb.Append(string.Join(z_tab,
+                    [
+                        _pe1_list[i].I_DEAT_NOTE,
+                        _pe1_list[i].I_BURI_PLAC,
+                        _pe1_list[i].I_DEAT_CAUS
+                    ]));
+                    _pers_line_text = sb.ToString();
+
+                    z_info_new = new(_date_val/* + z_tab*/, "DEATH", _pers_line_text);
                             //+ z_tab + _pe1_list[i].I
-                            + z_tab + _pe1_list[i].I_DEAT_NOTE
-                            + z_tab + _pe1_list[i].I_DEAT_CAUS
-                            + z_tab + _pe1_list[i].I_BURI_PLAC
-                            );
-                    z_event_death_list.Add(z_info_new);
+                            
+                    z_death_list.Add(z_info_new);
+
 
                 }
             }
@@ -1936,15 +1979,17 @@ class A00_Code
 
         //A11_Save_PersLine();
 
+        N11_Save("_fam_line_list", _fam_line_list, z_out_file_FamLine);
+
         N11_Save("_pers_line_list", _pers_line_list, z_out_file_PersLine);
 
 
-        N11_Save("z_event_birth_list", z_event_birth_list, z_out_file_birth_list);
+        N11_Save("z_birth_list", z_birth_list, z_out_file_birth_list);
 
-        N11_Save("z_event_death_list", z_event_death_list, z_out_file_death_list);
+        N11_Save("z_death_list", z_death_list, z_out_file_death_list);
 
 
-        N11_Save("_fam_line_list", _fam_line_list, z_out_file_FamLine);
+
 
         //N11_Save("_album_line_list", z_album_line_list, z_out_file_AlbumLine);
 
@@ -1953,24 +1998,24 @@ class A00_Code
         //N11_Save("_note_line_list", z_note_line_list, z_out_file_NoteLine);
 
 
-        _info_0_text = "_pers_line_list populated: " + _pers_line_list.Count;
+        //_info_0_text = "_pers_line_list populated: " + _pers_line_list.Count;
 
-        //Xwrite("Step_2206", true, _info_0_text);
-        //Console.WriteLine(_info_0_text);
-        //    z_info_new = new("INFO;", ";", _info_0_text);
-        //    z_info_list.Add(z_info_new);
+        ////Xwrite("Step_2206", true, _info_0_text);
+        ////Console.WriteLine(_info_0_text);
+        ////    z_info_new = new("INFO;", ";", _info_0_text);
+        ////    z_info_list.Add(z_info_new);
 
-        _info_0_text += z_newline + "EventList Birth populated    : " + z_event_birth_list.Count;
+        //_info_0_text += z_newline + "EventList Birth populated    : " + z_birth_list.Count;
+
+        ////Xwrite("Step_2208", true, _info_0_text);
+
+        //_info_0_text += z_newline + "EventList death+buri populated    : " + z_death_list.Count;
+
+        ////Xwrite("Step_2208", true, _info_0_text);
+
+        ////_info_0_text += z_newline + "EventList Buri populated    : " + z_event_buri_list.Count;
 
         //Xwrite("Step_2208", true, _info_0_text);
-
-        _info_0_text += z_newline + "EventList death+buri populated    : " + z_event_death_list.Count;
-
-        //Xwrite("Step_2208", true, _info_0_text);
-
-        //_info_0_text += z_newline + "EventList Buri populated    : " + z_event_buri_list.Count;
-
-        Xwrite("Step_2208", true, _info_0_text);
 
         N11_Save("z_info_list", z_info_list, z_out_file_info_list);
 
@@ -2009,9 +2054,11 @@ class A00_Code
                 z_nextGoalOfLines += 1000;
             }
 
+
             _fam_line_text = "F-" + _fam_list[i].AA_F_INDEX
                 + z_semicolon + _fam_list[i].F_HUSB
                 + z_semicolon + _fam_list[i].F_WIFE
+
                 + z_semicolon + _fam_list[i].F_MARR_DATE
                 + z_semicolon + _fam_list[i].F_MARR_PLAC
                 + z_semicolon + _fam_list[i].F_CHIL
@@ -2058,7 +2105,7 @@ class A00_Code
     private static void PopulateSourceList()
     {
         _info_0_text = "begin of Populate _source_line_list" + z_newline;
-        Xwrite("Step_1102", true, _info_0_text);
+        //Xwrite("Step_1102", true, _info_0_text);
 
 
 
@@ -2159,15 +2206,24 @@ class A00_Code
     }
     static async Task Main()
     {
+        _info_0_text = z_newline + "Step_1006 - Press ENTER to start !";
+        Console.WriteLine(_info_0_text);
+        //Trace.WriteLine(_info_0_text);
+
+        _comment_inside_code = "ReadLine - Press ENTER to start";
+        //Console.ReadLine();
+
         _comment_inside_code = "mainprog here";
 
-        string _path = "C:/DB/";
-        string _read_file = "__ged_IN";
-        string _extension = ".ged";
+        //string _path = "C:/DB/";
+        //string _read_file = "__ged_IN";
+        //string _extension = ".ged";
 
-        string z_0 = "";
-        string z_1 = "";
-        string z_2 = "";
+        //string z_0 = "";
+        //string z_1 = "";
+        //string z_2 = "";
+
+        //int _int_peList = 1;
 
         //int _sw0_int = -1;
         //private static 
@@ -2178,87 +2234,1597 @@ class A00_Code
         //bool boolSaveSingleEntry = false;
         //string z_blank = "";
         //string _secondblankOrEnd;
-        string unknownKeyText = "unknown";
+        //string unknownKeyText = "unknown";
         //string z_gedheadText = z_in_file;
-        string _immi_text = "";
+        //string _immi_text = "";
 
-        string _first = "";
-        string _update_string = "";
-        string _source_string = "";
-        string _entry_text = "";
-        int secondblankOrEnd = 0;
+        //string _first = "";
+        //string _update_string = "";
+        //string _source_string = "";
+        //string _entry_text = "";
+        //int secondblankOrEnd = 0;
         z_nextGoalOfLines = _count + 1;
 
-        int _pe_list_index = -1;
-        int _fam_list_index = -1;
+        //int _pe_list_index = -1;
+        //int _fam_list_index = -1;
 
         //string _date;
         //string _place;
         //string _dio = "";
         //string _cb;
-        string keyPrevious_pe = "";
-        string keyPrevious_fam = "";
-        string keyPrevious_note = "";
+        //string keyPrevious_pe = "";
+        //string keyPrevious_fam = "";
+        //string keyPrevious_note = "";
         //string keyPrevious_album = "";
-        string keyPrevious_sour = "";
+        //string keyPrevious_sour = "";
         //string keyPrevious_obj = "";
-        string keyPrevious_indi = "";
+        //string keyPrevious_indi = "";
 
-        string _dateString = _entry_text + _immi_text + keyPrevious_note + keyPrevious_sour + z_in_file;
+        //string _dateString = _entry_text + _immi_text + keyPrevious_note + keyPrevious_sour + z_in_file;
         //string _line_string = "";
         z_blank = "";
         //List<PersLine> _persLineList = [];
 
+        //MessageBox.Show(" just test ....is missing" + Environment.NewLine + Environment.NewLine +
+        //                    "Make sure you have the folder \\Resources !!", "WARNING",
+        //                    MessageBoxButton.OK);
 
-        List<string> _all_lines = await Task.Run(() => N01_Read_Input(_path, _read_file, _extension));
 
-        N05_DoAutosave(_all_lines);
 
-        _comment_inside_code = z_newline + z_newline
-                + "Additional checks:" + z_newline
-                + "- last done: 17_04_2026 = check Orte-Korrekturen > FTB" + z_newline
-                + "- last done: 17_04_2026 = clean Erdbestattung (BG-Sources)" + z_newline
 
-                + "- last done: 17_04_2026 = check typo: *Josepf* > Access" + z_newline
-                + "- last done: 17_04_2026 = check Walbruga > FTB" + z_newline
-                + "- last done: 17_04_2026 = check Wlabruga > FTB" + z_newline
-                + "- last done: 17_04_2026 = Gerog vs Georg" + z_newline
-                + "- last done: 19 DEC 2022  = xx times >>> FTB: check Anony* = death (0 or 1 day)" + z_newline
+        //N05_DoAutosave(_all_fam_lines);
+        //N11_Save("_all_fam_lines", _all_fam_lines, C:/ DB / _3_FAM_IN.ged);
 
-                + "- last done: 24 DEC 2024 = check *Reid* vs Ried > FTB" + z_newline
-                + "- last done: 24 APR 2024 = if Note = M or PF > Matrikel.txt (only Note, not DEAT_CAUS)" + z_newline
+        //N05_DoAutosave(_all_lines);
+        //N11_Save("_pers_line_list", _pers_line_list, z_out_file_PersLine);
 
-                + "- last done: 17_04_2026 = XLS: check Gütler) > " + z_newline
-                + "- last done: 17_04_2026 = XLS: check Kind) > XLS" + z_newline
-                + "- last done: 24 DEC 2024 = XLS: check (AN > XLS" + z_newline
-                + "- last done: 19 APR 2022  = xx times >>> INDI: not (Kind) and AGE = 2" + z_newline
-                + "- last done: 24 APR 2024 = <p>&nbsp;" + z_newline
-                + z_newline
-                + "- last done: 19 APR 2022 = xx times >>> INDI: DEAT-CAUS not empty or M6097 + D_DATE > D_NOTE not empty" + z_newline
-                + "- last done: 19 APR 2022 = 35 times >>> INDI: DEAT-CAUS not DE-8 or other place" + z_newline
-                + "- last done: 19 APR 2022 = xx times >>> INDI: (Pflegling) and DEAT-CAUS not empty" + z_newline
-                + "- last done: 19 APR 2022 = xx times >>> INDI: not (Kind) and AGE = 2" + z_newline
-                + "- last done: 19 APR 2022 = xx times >>> INDI: check NOTES for being unique" + z_newline
+        N02_Print_Additional_checks();
 
-                + "- last done: 19 APR 2022 = xx times >>> INDI: check NOTES for being unique" + z_newline
-                + "- OPEN = xx times >>> CODE or FTB-EXPORT_LEBENDE: born < 1918 and still alive coded" + z_newline
-                ;
 
-        _comment_inside_code = "SKIPPED listing > Additional checks";
-        Xwrite("Step_8863", true, _comment_inside_code);
-
-        _comment_inside_code = " > clear Immediate Window manually" + _source_string + _update_string;
+        _comment_inside_code = " > clear Immediate Window manually";// + _source_string + _update_string;
         Xwrite("Step_8866", true, _comment_inside_code);
 
         _comment_inside_code = "Trace.WriteLine goes to Output inside VS while Console.Writeline goes to Prompt-Window";
+
+
 
         //_count = unknownKeyCount;
 
 
         //Do_All_lines(_all_lines);        auto
 
+        List<string> _all_fam_lines = await Task.Run(() => N01_Read_Input(z_FAM_IN_file));
+
+        N06_FAM_Lines(_all_fam_lines);
+
+
+        List<string> _all_lines = await Task.Run(() => N01_Read_Input(z_INDI_IN_file));
+
+        N07_INDI_Lines(_all_lines);
+
+        //_count = 0;
+        //z_nextGoalOfLines = 100000;
+
+
+        //foreach (var _line in _all_lines)
+        //{
+        //    _count += 1;
+        //    //Trace.WriteLine(_count + " > " + _line);
+
+        //    //_info_0_text = _count + " > Orig.Line= > " + _line;
+        //    //Console.WriteLine(_info_0_text);
+        //    string _valueAdd = "";
+        //    bool _line_used = true;
+
+        //    Replace_stuff(_line, out string _line_string);
+
+        //    _line_string = Replace_Months_Days(_line_string);
+
+        //    _comment_inside_code = "Check input here" + "if (_line_string.Length == 0)" + "if (_count > z_nextGoalOfLines)";
+
+        //    //_info_0_text = z_newline
+        //    //    + "now > " + _line_string + z_newline
+        //    //    + "org > " + _line
+        //    //    + z_newline
+        //    //    ;
+        //    //Xwrite("Step_2205", true, _count + " > " + _info_0_text);
+
+        //    //_comment_inside_code = "if (_line_string.Length == 0)";
+        //    //if (_line_string.Length == 0)
+        //    //{
+        //    //    _info_0_text = " > " + _count + " > Line= > " + _line_string + " IS EMPTY           > Orig.= > " + _line;
+        //    //    //Console.WriteLine(_info_0_text);
+        //    //    Trace.WriteLine(_info_0_text);
+        //    //    Debugger.Break();
+        //    //    continue;
+        //    //}
+
+        //    //_comment_inside_code = "if (_count > z_nextGoalOfLines)";
+
+        //    _first = _line_string[..1];//.ToString();
+        //    _ = int.TryParse(_first, out int _first_int);
+
+        //    secondblankOrEnd = N72_Get_2nd_blank(1, _line_string);
+
+        //    _comment_inside_code = "firstchar=0";
+
+
+        //    switch (_first_int)
+        //    {
+        //        case 0:
+
+        //            if (_count > z_nextGoalOfLines)
+        //            {
+        //                _info_0_text = "Step_1400 > " + DateTime.Now
+        //                    + " > " + z_nextGoalOfLines / 1000 + " TSD > Line= > " + _line_string + "           > Orig.= > " + _line;
+        //                Xwrite("INFO", true, _info_0_text);
+        //                //Trace.WriteLine(_info_0_text);
+        //                //z_info_new = new("INFO;", ";", _info_0_text);
+        //                //z_info_list.Add(z_info_new);
+
+        //                z_nextGoalOfLines += 50000;
+        //            }
+
+
+        //            if (_pe1_list.Count > 10)
+        //            {
+        //                _pe2_list.AddRange(_pe1_list);
+
+        //                _pe1_list.Clear();
+        //            }
+
+        //            //switch (_pe1_list.Count)
+        //            //{
+        //            //    case > 200:
+        //            //        _int_peList = 3;
+        //            //        Console.WriteLine("_int_peList = 3;");
+        //            //        break;
+        //            //    case > 100:
+        //            //        _int_peList = 2;
+        //            //        Console.WriteLine("_int_peList = 2;");
+        //            //        break;
+        //            //    case > 0:
+        //            //        _int_peList = 1;
+        //            //        Console.WriteLine("_int_peList = 1;");
+        //            //        break;
+        //            //}
+
+
+        //            //_first = _line_string.[..1].ToString();
+        //            //_comment_inside_code = "SAVE TIME";
+
+        //            //_comment_inside_code = "here: for all lines";
+
+        //            //_first = _line_string[..1];//.ToString();
+
+
+        //            //if (_line_string.Contains("DAH+"))
+        //            //    _source_string = "_DAH_85244";
+
+        //            //if (_line_string.Contains("Jaubert Family Tree"))
+        //            //    _source_string = "Sylvie";
+
+        //            //if (_line_string.Contains("Family Tree Builder"))
+        //            //    _source_string = "FTP-Export";
+
+
+        //            _comment_inside_code = "SAVE TIME" + " > here: for all lines" + " > _line_string.Contains(\"UPD\")";
+        //            //if (_line_string.Contains("UPD"))  // for header
+        //            //{
+        //            //    //_update_string = N78_not_used_GetUpdateString(_line_string);
+        //            //    _update_string = _line_string;
+        //            //}
+
+        //            //if (_line_string == "2 AGE 74")
+        //            //{
+        //            //    //Debugger.Break();
+        //            //}
+
+
+
+        //            _comment_inside_code = "_entry_text += keyPrevious_pe + \";\" + _line_string + \" > \";";
+        //            //if (_first_int != 0)
+        //            //{
+        //            //    //_entry_text += keyPrevious_pe + ";" + _line_string + " > ";
+        //            //}
+
+
+
+        //            // Works
+
+
+        //            _entry_text = "";
+        //            //Console.WriteLine("keyPrevious {0}, _entry_text {1}, _update_string {2}, _source_string {3}", 
+        //            //    keyPrevious_pe, _entry_text, _update_string, _source_string);
+
+        //            _comment_inside_code = "output for each single entry to _GED_OUT folder";
+        //            //if (z_slow > 8 && boolSaveSingleEntry == false)
+        //            //{
+        //            //    _info_0_text = z_slow + ";NO;no output for each single entry to _GED_OUT folder";
+        //            //    Xwrite("Step_8900", true, _line_string);
+
+        //            //    boolSaveSingleEntry = true;
+        //            //}
+        //            //else
+        //            //{
+
+
+        //            //    if (z_slow < 2 && keyPrevious_pe != null && keyPrevious_pe != "")
+        //            //    {
+        //            //        _info_0_text = "SaveEntry = eine Datei je ID-Nummer";
+        //            //        //SaveEntry(keyPrevious, _entry_text, _update_string, _source_string); // ein 
+        //            //        boolSaveSingleEntry = true;
+        //            //    }
+        //            //}
+
+
+
+
+
+
+        //            //int _first_blank = 1;
+
+
+        //            // _first_blank
+        //            // Replace this unsafe block:
+        //            // if (_line_string.Contains(' ')) _first_blank = _line_string.IndexOf(' ');
+        //            // int start = _first_blank + 1;
+        //            // int stopp = _line_string.Length - start - 1;
+        //            // secondblankOrEnd = _line_string.Substring(start, stopp).IndexOf(' ') + 2;
+        //            // if (secondblankOrEnd < 2)
+        //            //     secondblankOrEnd = _line_string.Length - 2;
+
+        //            // With this safe code:
+        //            //_comment_inside_code = "NO find _first_blank";
+        //            //if (_line_string.Contains(' '))
+        //            //{
+        //            //    _first_blank = _line_string.IndexOf(' ');
+        //            //}
+        //            //else
+        //            //{
+        //            //    _first_blank = -1;
+        //            //}
+
+        //            // Find second space index robustly
+
+        //            //int secondblankOrEnd;
+
+
+
+        //            //if (/*_first_blank >= 0 &&*/ _first_blank + 1 < _line_string.Length)
+        //            //{
+        //            //    secondSpaceIndex = _line_string.IndexOf(' ', _first_blank + 1);
+        //            //}
+
+        //            //// Use line end when second space not found
+        //            //if (secondSpaceIndex == -1)
+        //            //{
+        //            //    // no second space -> treat as end of line
+        //            //    secondblankOrEnd = _line_string.Length;
+        //            //}
+        //            //else
+        //            //{
+        //            //    secondblankOrEnd = secondSpaceIndex;
+        //            //}
+        //            //if (SecondBlankOrEnd == 4 )  // only e.g. BIRT, nothing more
+        //            //    SecondBlankOrEnd = 0;
+        //            //Console.WriteLine("_first_blank = {0}, = {1}, {2}", _first_blank, secondblankOrEnd, _line_string);
+
+
+        //            // Example
+        //            // 0123456789
+        //            // 2 DATE 9 DEC 1939
+        //            // 1 SEX M
+
+
+
+        //            if (_line_string.Substring(2, 4).ToString() == "HEAD")
+        //            {
+        //                z_0 = "H_";
+        //                //_sw0_int = 0;
+        //                z_key = "HEAD";
+        //                keyPrevious_pe = z_key;
+        //                //continue;
+        //            }
+
+        //            _comment_inside_code = "ab hier U_";
+        //            //if (_line_string.Substring(2, 2).ToString() == @"@U")
+        //            //{
+        //            //    z_0 = "U_";
+        //            //    Console.WriteLine("#### skipped 'U' = {0}", _line_string);
+        //            //    //continue;
+        //            //}
+
+        //            // NOTE
+        //            _comment_inside_code = "ab hier notes";
+        //            //if (_line_string.EndsWith("NOTE"))
+        //            //{
+        //            //    z_0 = "N_";
+        //            //    //Console.WriteLine("#### skipped 'NOTE' = {0}", _line_string);
+
+        //            //    //z_key = _line_string.Substring(3, secondblankOrEnd - 3).ToString().Trim();
+        //            //    //z_key = _line_string.Substring(3, secondblankOrEnd - 3).ToString().Trim();
+        //            //    z_key = _line_string[3..secondblankOrEnd].ToString().Trim();
+        //            //    z_key = z_key.Replace("@", "");
+        //            //    keyPrevious_note = z_key;
+
+        //            //    Note noteNew = new(keyPrevious_note, z_blank, z_blank, z_blank);
+        //            //    z_note_list.Add(noteNew);
+        //            //    //Console.WriteLine("adding FAM = {0}", keyPrevious);
+        //            //    //continue;
+        //            //}
+
+
+        //            // INDI
+        //            //int _pe_index_count = 0;
+        //            if (_line_string.EndsWith("INDI"))  // not TRLR = each entry
+        //            {
+        //                z_0 = "I_";
+        //                //_sw0_int = 1;
+
+        //                //z_key = _line_string.Substring(3, secondblankOrEnd - 3).ToString().Trim();
+        //                z_key = _line_string[3..secondblankOrEnd].ToString().Trim();
+        //                z_key = N61_CleanID(z_key);
+        //                keyPrevious_indi = z_key;
+        //                //keyPrevious_indi = z_key;
+        //                if (keyPrevious_indi == "")
+        //                {
+        //                    keyPrevious_indi = " ";
+        //                }
+
+        //                Pe peNew = new(keyPrevious_indi
+        //                    , z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank  // 11
+        //                    , z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank  // 21
+        //                    , z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank  // 31
+        //                    , z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank  // 41
+        //                    , z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank  // 51
+
+
+        //                    );
+        //                //if (_count < 11300000)
+        //                //{
+        //                //switch (_int_peList)
+        //                //{
+        //                //    case 1: _pe1_list.Add(peNew); break;
+        //                //    case 2: _pe2_list.Add(peNew); break;
+        //                //    case 3: _pe3_list.Add(peNew); break;
+        //                //    case 4: _pe4_list.Add(peNew); break;
+        //                //default:
+        //                //        break;
+        //                //}
+        //                _pe1_list.Add(peNew);
+        //                //}
+        //                //else
+        //                //{
+        //                _comment_inside_code = "pe2_list";
+        //                //    _pe2_list.Add(peNew);
+        //                //}
+
+        //                // record index for fast lookup
+        //                _pe1_index[keyPrevious_indi] = _pe1_list.Count - 1;
+        //                //_pers_text_coll_global.Clear();
+        //                //Console.WriteLine("adding = {0}", keyPrevious);
+        //                //continue;
+        //            }
+
+        //            // FAM
+        //            _comment_inside_code = "ab hier families";
+        //            //int _fam_index_count = 0;
+        //            if (_line_string.EndsWith("FAM"))
+        //            {
+        //                z_0 = "F_";
+        //                //_sw0_int = 2;
+        //                //z_key = _line_string.Substring(3, secondblankOrEnd - 3).ToString().Trim();
+        //                z_key = _line_string[3..secondblankOrEnd].ToString().Trim();
+        //                z_key = N61_CleanID(z_key);
+        //                keyPrevious_fam = z_key;
+
+        //                Fam famNew = new(keyPrevious_fam
+        //                    , z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank//  // 11//
+        //                    , z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank//  // 21
+        //                    , z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank//,
+        //                    );
+
+
+        //                // record index for fast lookup
+        //                _fam_list.Add(famNew);
+        //                _fam_index[keyPrevious_fam] = _fam_list.Count - 1;
+        //                //Console.WriteLine("adding FAM = {0}", keyPrevious);
+        //                //continue;
+        //            }
+
+        //            _pe_list_index = _pe1_index.GetValueOrDefault(keyPrevious_indi, -1);
+        //            _fam_list_index = _fam_index.GetValueOrDefault(keyPrevious_fam, -1);
+        //            int _note_list_index = 0;
+        //            //int _source_list_index = z_source_list.FindIndex(item => item.AA_S_INDEX == keyPrevious_sour);
+        //            int _source_list_index = 0;
+        //            //int _album_list_index = z_album_list.FindIndex(item => item.AA_A_INDEX == keyPrevious_album);
+        //            int _album_list_index = 0;
+        //            z_lastPeListIndex_DONE = _pe_list_index + _note_list_index + _source_list_index + _album_list_index;
+        //            //int lastPeListIndex = _pe_list_index + _note_list_index + _source_list_index + _album_list_index;
+        //            //else
+        //            //{
+        //            //    unknownKeyCount += 1;
+        //            //    keyPrevious = z_key;
+        //            //    //z_lastPeListIndex_DONE = z_lastPeListIndex;
+        //            //    //pe peNew = new pe(keyPrevious,"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "");
+        //            //    //_pe1_list.Add(peNew);
+        //            //    z_key = "unknownKeyCount" + unknownKeyCount.ToString();
+
+        //            //}
+
+        //            _comment_inside_code = "ab hier ALBUM";
+        //            //ALBUM
+        //            //if (_line_string.EndsWith("ALBUM"))
+        //            //{
+        //            //    z_0 = "A_";
+        //            //    //Console.WriteLine("#### skipped 'ALBUM' = {0}", _line_string);
+
+        //            //    //z_key = _line_string.Substring(3, secondblankOrEnd - 3).ToString().Trim();
+        //            //    z_key = _line_string[3..secondblankOrEnd].ToString().Trim();
+        //            //    z_key = z_key.Replace("@", "");
+
+        //            //    if (z_album_list.FindIndex(item => item.AA_A_INDEX == z_key) > -1)
+        //            //    {
+        //            //        z_key += "2";
+        //            //    }
+
+        //            //    keyPrevious_album = z_key;
+
+        //            //    Album albumNew = new(keyPrevious_album, z_blank, z_blank, z_blank, z_blank);
+        //            //    z_album_list.Add(albumNew);
+        //            //    //Console.WriteLine("adding ALBUM = {0}", keyPrevious);
+        //            //    //continue;
+        //            //}
+
+        //            _comment_inside_code = "ab hier end of file";
+        //            //if (_line_string.EndsWith("TRLR"))
+        //            //{
+        //            //    z_0 = "END_";
+        //            //    //Console.WriteLine("___________________________________________________start;" + z_start_time_global + ";now;" + DateTime.Now + ";END  ;#### TRLR = End of file");
+        //            //    _info_0_text = "TRLR = End of file > " + _count;
+        //            //    Xwrite("Step_9985", true, _info_0_text);
+        //            //    //continue;
+        //            //}
+
+
+        //            //string keyPrevious_sour = "";
+        //            _comment_inside_code = "ab hier sources";
+        //            //if (_line_string.EndsWith("SOUR"))  // SOUR
+        //            //{
+        //            //    z_0 = "S_";
+        //            //    //z_key = _line_string.Substring(3, secondblankOrEnd - 3).ToString().Trim();
+        //            //    z_key = _line_string[3..secondblankOrEnd].ToString().Trim();
+        //            //    z_key = z_key.Replace("@", "");
+        //            //    keyPrevious_sour = z_key;
+
+        //            //    Source sourceNew = new(keyPrevious_sour, z_blank, z_blank, z_blank);//, z_blank, z_blank, z_blank, z_blank);
+        //            //    z_source_list.Add(sourceNew);
+        //            //    //Console.WriteLine("adding FAM = {0}", keyPrevious);
+        //            //    //continue;
+        //            //}
+
+
+        //            z_lastPeListIndex_DONE = z_lastPeListIndex - 1;
+        //            //}
+        //            _comment_inside_code = "End of:  if (_first == 0";
+
+
+        //            //_pe3_index.Clear();
+        //            //for (int i = 0; i < _pe1_list.Count; i++)
+        //            //{
+        //            //    _pe3_index.Add(_pe1_list[i].AA_I_INDEX, i);
+        //            //}
+
+        //            //_fam_index.Clear();
+        //            //for (int i = 0; i < _fam_list.Count; i++)
+        //            //{
+        //            //    _fam_index.Add(_fam_list[i].AA_F_INDEX, i);
+        //            //}
+
+
+        //            //if (_pe3_index.TryGetValue(keyPrevious_pe, out int value_pe))
+        //            //{
+        //            //    _pe_list_index = value_pe;
+        //            //}
+
+        //            //int _fam_list_index = 0;// = _pe1_list.FindIndex(item => item.AA_I_INDEX == keyPrevious);
+        //            //if (_fam_index.TryGetValue(keyPrevious_fam, out int value_fam))
+        //            //{
+        //            //    _fam_list_index = value_fam;
+        //            //}
+
+        //            //_pe3_index.Add(_pe1_list[_pe_list_index].AA_I_INDEX, _pe_list_index);
+
+        //            //int z_lastPeListIndex_DONE;
+
+        //            //_fam_index.Add(_fam_list[_pe_list_index].AA_F_INDEX, _pe_list_index);
+        //            //int _note_list_index = z_note_list.FindIndex(item => item.AA_N_INDEX == keyPrevious_note);
+
+        //            //_pe1_list.Add(peNew);
+
+        //            break;
+
+
+
+
+
+        //        case 1:
+        //            _comment_inside_code = "first = 1";
+        //            //#region _first_int == 1"
+
+        //            if (_line_string.Length > 5)
+        //                z_1 = z_0 + _line_string.Substring(2, 4).Trim(); // + z_separator;
+        //            else
+        //                z_1 = z_0 + _line_string.Substring(2, 3).Trim(); // + z_separator;
+
+        //            //_valueAdd = "";
+        //            //Console.WriteLine("_line_string.Length = {1}, line = {0}", _line_string, _line_string.Length);
+        //            //if (_line_string.Length != z_1.Length + 2)
+        //            //{
+
+        //            //z_1 + z_separator +  // without
+        //            //_line_string.Substring(secondblankOrEnd + 1, _line_string.Length - secondblankOrEnd - 1) + z_separator;
+
+        //            //}
+
+        //            //_valueAdd = z_1.Substring(secondblankOrEnd + 1, z_1.Length - secondblankOrEnd - 1) + z_separator;
+
+        //            int z_1_length = z_1.Length + 1;
+
+        //            if (_line_string.Length > z_1.Length)
+        //            {
+        //                _valueAdd = _line_string[z_1_length..];
+        //                //_valueAdd = _line_string[2..];
+        //            }
+
+        //            //if (_valueAdd == "ENGA") _valueAdd = "verlobt";
+        //            //if (_valueAdd == "MARL") _valueAdd = "StAmt";
+
+        //            //else { _valueAdd}
+        //            //z_value += CleanText(_valueAdd);
+        //            //z_value += _valueAdd;
+
+        //            //_valueAdd = CleanText(_valueAdd);
+        //            //_valueAdd = CleanText(_valueAdd);
+
+        //            if (z_0 == "I_")
+        //            {
+        //                //Xwrite("",true,_line_string);
+
+        //                switch (z_1)
+        //                {
+        //                    // FAM
+        //                    //case "F_HUSB": _fam_list[_fam_list_index].F_HUSB = N61_CleanID(_valueAdd); break;
+        //                    //case "F_WIFE": _fam_list[_fam_list_index].F_WIFE = N61_CleanID(_valueAdd); break;
+        //                    case "F_RIN": /*_fam_list[_fam_list_index].F_RIN = _valueAdd;*/ break;
+        //                    case "F_RIN ": /*_fam_list[_fam_list_index].F_RIN = _valueAdd;*/ break;
+        //                    case "F_UID": /*_fam_list[_fam_list_index].F__UID = _valueAdd;*/ break;
+        //                    //case "F_UID": /*_fam_list[_fam_list_index].F__UID = _valueAdd;*/ break;
+        //                    case "I_UID": /*_fam_list[_fam_list_index].F__UID = _valueAdd;*/ break;
+        //                    case "F__UID": /*_fam_list[_fam_list_index].F__UID = _valueAdd;*/ break;
+        //                    case "I__UID": /*_fam_list[_fam_list_index].F__UID = _valueAdd;*/ break;
+        //                    //case "F_CHIL": _fam_list[_fam_list_index].F_CHIL += N61_CleanID(_valueAdd) + " # "; break;
+        //                    ////case "F__UPD": _fam_list[_fam_list_index].F__UPD = _valueAdd; break;
+        //                    case "F_MARR": /*_fam_list[_fam_list_index].F_MARR = _valueAdd;*/ break;
+        //                    //case "F_MARL": _fam_list[_fam_list_index].F_MARL = _valueAdd; break;  // Hochzeit Standesamt
+        //                    //case "F_DIV": _fam_list[_fam_list_index].F_DIV = _valueAdd; break;  // Divorce
+        //                    //case "F_ENGA": _fam_list[_fam_list_index].F_ENGA = _valueAdd; break; // Verlobung
+        //                    //                                                                     //case "F_ANUL": _fam_list[_fam_list_index].F_ANUL = _valueAdd; break;
+        //                    //                                                                     //case "F_EVEN": _fam_list[_fam_list_index].F_EVEN = _valueAdd; break;
+
+        //                    //// SOURCE
+        //                    ////case "S_AUTH": z_source_list[_source_list_index].S_AUTH = _valueAdd; break;
+        //                    ////case "S_TITL": z_source_list[_source_list_index].S_TITL = _valueAdd; break;
+        //                    ////case "S_PUBL": z_source_list[_source_list_index].S_PUBL = _valueAdd; break;
+        //                    ////case "S_TEXT": z_source_list[_source_list_index].S_TEXT = _valueAdd; break;
+        //                    ////case "S__TYP": /*z_source_list[_source_list_index].S__TYP = _valueAdd;*/ break;
+        //                    ////case "S__MED": z_source_list[_source_list_index].S__MED = _valueAdd; break;
+
+        //                    //// ALBUM = Photos
+        //                    ////case "S_AUTH": z_album_list[_album_list_index].S_AUTH = _valueAdd; break;
+        //                    ////case "A_TITL": z_album_list[_album_list_index].A_TITL = _valueAdd; break;
+        //                    ////case "A_DESC": z_album_list[_album_list_index].A_DESC = _valueAdd; break;
+        //                    ////case "S_TEXT": z_album_list[_album_list_index].S_TEXT = _valueAdd; break;
+        //                    case "A__UPD": /*z_album_list[_album_list_index].A__UPD = _valueAdd;*/ break;
+        //                    case "A_RIN": /*z_album_list[_album_list_index].A_RIN = _valueAdd;*/ break;
+
+
+        //                    //// INDI
+        //                    case "I_NAME": /*_pe1_list[_pe_list_index].I_NAME = _valueAdd;*/ break;
+        //                    ////case "I_NAME": _pe1_list[_pe_list_index].I_NAME = _valueAdd; break;
+        //                    ////case "I_NAME": _pe1_list[_pe_list_index].I_NAME = _valueAdd; break;
+        //                    ////case "I_NAME": _pe1_list[_pe_list_index].I_NAME = _valueAdd; break;
+        //                    case "I_SEX":
+        //                        _pe1_list[_pe_list_index].I_SEX = _valueAdd;
+        //                        //if (z_slow > 0)
+        //                        //{
+        //                        //    if (_bool_sex_u == false && _valueAdd.Contains("U"))// || _valueAdd.Contains("") || _valueAdd.Contains(" "))
+        //                        //    {
+        //                        //        errortext = z_blank + "SEX contains U"
+        //                        //            + z_blank + _pe1_list[_pe_list_index].I_SEX
+        //                        //            + " verh. " + _pe1_list[_pe_list_index].I_NAME_MARNM
+        //                        //            + z_blank + _pe1_list[_pe_list_index].I_NAME_SURN
+        //                        //            + z_blank + _pe1_list[_pe_list_index].I_NAME_GIVN
+        //                        //            + z_blank + _pe1_list[_pe_list_index].AA_I_INDEX
+        //                        //            ;
+        //                        //        Console.WriteLine(errortext);
+        //                        //        AddError(_count.ToString(), "SEX contains U", errortext);
+        //                        //    }
+        //                        //}
+        //                        //else
+        //                        //if (z_slow == 0 && _bool_sex_u == false)
+        //                        //{
+        //                        //    _info_0_text = z_slow + "; NO_0009;no check for *SEX contains U*";
+        //                        //    Xwrite("Step_9905", true, _info_0_text);
+
+        //                        //    _bool_sex_u = true;
+        //                        //}
+        //                        break;
+        //                    case "I_BIRT": /*_pe1_list[_pe_list_index].I_BIRT = _valueAdd;*/ break;
+        //                    case "I_DEAT":
+        //                        _pe1_list[_pe_list_index].I_DEAT = _valueAdd;
+
+        //                        if (_valueAdd == "DEAT Y")
+        //                            _pe1_list[_pe_list_index].I_SEX += "d";
+        //                        else
+        //                            _pe1_list[_pe_list_index].I_SEX += "a";
+
+        //                        break;
+
+        //                    case "I_BURI": /*_pe1_list[_pe_list_index].I_BURI = _valueAdd;*/ break;
+        //                    case "I_FAMS": _pe1_list[_pe_list_index].I_FAMS += "Sp:F" + N61_CleanID(_valueAdd[1..]) + " # "/* + z_ht*/; break;
+        //                    case "I_FAMC": _pe1_list[_pe_list_index].I_FAMC += "C:F" + N61_CleanID(_valueAdd[1..]) + " # "; break;
+
+
+        //                    case "I_RESI": /*_pe1_list[_pe_list_index].I_RESI = _valueAdd;*/ break;
+        //                    //case "I_ADDR": /*_pe1_list[_pe_list_index].I_RESI = _valueAdd;*/ break;  // same like RESI ??
+        //                    //case "I_CONF": /*_pe1_list[_pe_list_index].I_CONF = _valueAdd;*/ break;
+        //                    case "I_RELI": _pe1_list[_pe_list_index].I_RELI = _valueAdd; break;
+        //                    case "I_OCCU": _pe1_list[_pe_list_index].I_OCCU = _valueAdd; break;
+        //                    //case "I_CENS": /*_pe1_list[_pe_list_index].I_CENS = _valueAdd;*/ break;
+        //                    case "I_NOTE": _pe1_list[_pe_list_index].I_NOTE = _valueAdd; break;
+
+        //                    case "I_RIN": /*_pe1_list[_pe_list_index].I_RIN = _valueAdd;*/ break;
+        //                    //case "I__UID": /*_pe1_list[_pe_list_index].I__UID = _valueAdd;*/ break;
+
+        //                    case "S_RIN": /*z_source_list[_source_list_index].S_RIN = _valueAdd;*/ break;
+        //                    case "S__UID": /*z_source_list[_source_list_index].S__UID = _valueAdd;*/ break;
+
+        //                    //case "I_ORDN": /*z_source_list[_source_list_index].S__UID = _valueAdd;*/ break;
+
+        //                    case "I_RIN ": /*_pe1_list[_pe_list_index].I_RIN = _valueAdd;*/ break;
+        //                    case "I__RIN": /*_pe1_list[_pe_list_index].I_RIN = _valueAdd;*/ break;
+        //                    case "I_UID ": /*_pe1_list[_pe_list_index].I_UID = _valueAdd;*/ break;
+
+        //                    case "I__UPD": /*_pe1_list[_pe_list_index].I_UPD = _valueAdd;*/ break;
+        //                    //case "I_CHAN": _pe1_list[_pe_list_index].I_UPD = "### Change instead UPD ### " + _valueAdd; break;
+        //                    //case "N_CONC": z_note_list[_note_list_index].N_CONC = _valueAdd; break;
+        //                    //case "N_PRIN": z_note_list[_note_list_index].N_PRIN = _valueAdd; break;
+        //                    case "N_RIN ": /*z_note_list[_note_list_index].N_RIN = _valueAdd;*/ break;
+        //                    case "N_UID ": /*_pe1_list[_pe_list_index].I_UID = _valueAdd;*/ break;
+
+        //                    //case "I_EVEN": /*_pe1_list[_pe_list_index].I_EVEN = _valueAdd;*/ break;
+        //                    case "I_EMIG": _pe1_list[_pe_list_index].I_EMIG = _valueAdd; break;
+        //                    case "I_IMMI": _pe1_list[_pe_list_index].I_IMMI = _valueAdd; break;
+
+        //                    //case "I_NATI": /*_pe1_list[_pe_list_index].I_NATI = _valueAdd;*/ break;
+
+
+        //                    case "I_SOUR": /*_pe1_list[_pe_list_index].I_SOUR = _valueAdd;*/ break;
+
+        //                    case "I_OBJE": /*_pe1_list[_pe_list_index].I_OBJE = _valueAdd;*/ break;
+
+        //                    case "I_MARR": _pe1_list[_pe_list_index].I_MARR = _valueAdd; break;
+        //                    //case "I_DIV ": _pe1_list[_fam_list_index].I_DIV = _valueAdd; break;
+        //                    //case "I_NATI": _pe1_list[_pe_list_index].I_NATI = _valueAdd; break;
+
+        //                    default: _line_used = false; break;
+        //                }
+        //            }
+
+
+        //            _comment_inside_code = "Families";
+        //            if (z_0 == "F_")
+        //            {
+        //                switch (z_1)
+        //                {
+        //                    // FAM
+        //                    case "F_HUSB": _fam_list[_fam_list_index].F_HUSB = _valueAdd; break;
+        //                    //case "F_HUSB": _fam_list[_fam_list_index].F_HUSB = N61_CleanID(_valueAdd); break;
+        //                    case "F_WIFE": _fam_list[_fam_list_index].F_WIFE = _valueAdd; break;
+        //                    //case "F_WIFE": _fam_list[_fam_list_index].F_WIFE = N61_CleanID(_valueAdd); break;
+        //                    case "F_RIN": /*_fam_list[_fam_list_index].F_RIN = _valueAdd;*/ break;
+        //                    case "F__UID": /*_fam_list[_fam_list_index].F__UID = _valueAdd;*/ break;
+        //                    case "F_CHIL": _fam_list[_fam_list_index].F_CHIL += _valueAdd + " # "; break;
+        //                    //case "F_CHIL": _fam_list[_fam_list_index].F_CHIL += N61_CleanID(_valueAdd) + " # "; break;
+        //                    //case "F__UPD": _fam_list[_fam_list_index].F__UPD = _valueAdd; break;
+        //                    case "F_MARR": /*_fam_list[_fam_list_index].F_MARR = _valueAdd;*/ break;
+        //                    case "F_MARL": _fam_list[_fam_list_index].F_MARL = _valueAdd; break;  // Hochzeit Standesamt
+        //                    case "F_DIV": _fam_list[_fam_list_index].F_DIV = _valueAdd; break;  // Divorce
+        //                    case "F_ENGA": _fam_list[_fam_list_index].F_ENGA = _valueAdd; break; // Verlobung
+        //                                                                                         //case "F_ANUL": _fam_list[_fam_list_index].F_ANUL = _valueAdd; break;
+
+
+        //                    default: _line_used = false; break;
+        //                }
+        //            }
+        //            _comment_inside_code = "End of:  if (_first == 1";
+        //            // end of : if (_first_int == 1")
+        //            //#endregion _first = 1
+
+        //            if (z_0 != "I_" && z_0 != "F_")
+        //            {
+        //                switch (z_1)
+        //                {
+        //                    case "H_FILE": z_gedheadText += _valueAdd; break;
+        //                    //case "H_DATE": z_gedheadText += _valueAdd; break;
+        //                    //case "H_GEDC": z_gedheadText += _valueAdd; break;
+        //                    //case "H_CHAR": z_gedheadText += _valueAdd; break;
+        //                    //case "H_LANG": z_gedheadText += _valueAdd; break;
+        //                    //case "H_SOUR": z_gedheadText += _valueAdd; break;
+        //                    //case "H_DEST": z_gedheadText += _valueAdd; break;
+        //                    //case "H__PRO": /*z_gedheadText += _valueAdd;*/ break;
+        //                    //case "H__EXP": /*z_gedheadText += _valueAdd;*/ break;
+        //                    //case "H_FILE": z_gedheadText += _valueAdd; break;
+
+        //                    default: _line_used = false; break;
+
+
+        //                }
+        //            }
+
+        //            break;
+
+
+        //        //#region _first = 2
+        //        //_first_int == 2"
+        //        case 2:
+
+        //            z_2 = _line_string.Substring(2, 4);
+
+        //            _valueAdd = "";
+        //            //Console.WriteLine("_line_string.Length = {1}, line = {0}", _line_string, _line_string.Length);
+        //            if (_line_string.Length > 6)
+        //            {
+        //                //_valueAdd =_line_string.Substring(secondblankOrEnd + 1, _line_string.Length - secondblankOrEnd - 1) + z_separator;
+        //                _valueAdd = _line_string[secondblankOrEnd..];
+        //                //z_0 + z_1 + z_separator + "-" + z_2 + z_separator + // without
+        //            }
+
+
+        //            //_valueAdd = CleanText(_valueAdd);
+        //            //_valueAdd = CleanText(_valueAdd);
+
+        //            //z_value += _valueAdd;
+        //            z_value += _valueAdd + z_separator;
+
+        //            string _z0z1z2 = z_0 + z_1 + "_" + z_2;
+
+        //            bool boolCheckGIVEN = false;
+
+        //            if (z_0 == "I_")
+        //            {
+
+        //                switch (_z0z1z2)
+        //                {
+        //                    //// FAM
+        //                    //case "F_F_MARR_DATE": _fam_list[_fam_list_index].F_MARR_DATE = _valueAdd; break;
+        //                    //case "F_F_MARR_PLAC": _fam_list[_fam_list_index].F_MARR_PLAC = _valueAdd; break;
+        //                    //case "F_F_MARR_NOTE": _valueAdd = _valueAdd.Replace(",", "#"); _fam_list[_fam_list_index].F_MARR_NOTE = _valueAdd; break;
+        //                    ////case "F_F_MARR__UID": /*_fam_list[_fam_list_index].F_MARR__UID = _valueAdd;*/ break;
+        //                    ////case "F_F_MARR_RIN ": /*_fam_list[_fam_list_index].F_MARR_RIN = _valueAdd;*/ break;
+        //                    //case "F_F_EVEN_TYPE": _fam_list[_fam_list_index].F_EVEN_TYPE = _valueAdd; break;
+        //                    //case "F_F_EVEN_DATE": _fam_list[_fam_list_index].F_EVEN_DATE = _valueAdd; break;
+        //                    //case "F_F_EVEN_PLAC": _fam_list[_fam_list_index].F_EVEN_PLAC = _valueAdd; break;
+        //                    ////case "F_F_EVEN__UID": /*_fam_list[_fam_list_index].F_EVEN__UID = _valueAdd;*/ break;
+        //                    ////case "F_F_EVEN_RIN ": /*_fam_list[_fam_list_index].F_EVEN_RIN = _valueAdd;*/ break;
+        //                    //case "F_F_EVEN_NOTE": _fam_list[_fam_list_index].F_EVEN_NOTE = _valueAdd; break;
+        //                    //// MARL
+        //                    //case "F_F_MARL_DATE": _fam_list[_fam_list_index].F_MARL_DATE = _valueAdd; break;
+        //                    //case "F_F_MARL_PLAC": _fam_list[_fam_list_index].F_MARL_PLAC = _valueAdd; break;
+        //                    //case "F_F_MARL_NOTE": _fam_list[_fam_list_index].F_MARL_NOTE = _valueAdd; break;
+        //                    //// DIV
+        //                    //case "F_F_DIV_DATE": _fam_list[_fam_list_index].F_DIV_DATE = _valueAdd; break;
+        //                    //case "F_F_DIV_PLAC": _fam_list[_fam_list_index].F_DIV_PLAC = _valueAdd; break;
+        //                    //case "F_F_DIV_NOTE": _fam_list[_fam_list_index].F_DIV_NOTE = _valueAdd; break;
+        //                    //// ENGA
+        //                    //case "F_F_ENGA_DATE": _fam_list[_fam_list_index].F_ENGA_DATE = _valueAdd; break;
+        //                    //case "F_F_ENGA_PLAC": _fam_list[_fam_list_index].F_ENGA_PLAC = _valueAdd; break;
+        //                    //case "F_F_ENGA_NOTE": _fam_list[_fam_list_index].F_ENGA_NOTE = _valueAdd; break;
+        //                    //// ANUL
+        //                    //case "F_F_ANUL_DATE": _fam_list[_fam_list_index].F_ANUL_DATE = _valueAdd; break;
+        //                    //case "F_F_ANUL_PLAC": _fam_list[_fam_list_index].F_ANUL_PLAC = _valueAdd; break;
+        //                    //case "F_F_ANUL_NOTE": _fam_list[_fam_list_index].F_ANUL_NOTE = _valueAdd; break;
+
+        //                    //    // SOUR
+
+        //                    //case "S_S_SOUR_CONC": z_source_list[_source_list_index].S_SOUR_CONC = _valueAdd; break;
+        //                    //case "S_S_TEXT_CONC": z_source_list[_source_list_index].S_TEXT_CONC = _valueAdd; break;
+
+
+        //                    // HEADER
+        //                    //case "H_H_GEDC_VERS": z_gedheadText += _valueAdd; break;
+        //                    //case "H_H_GEDC_FORM": z_gedheadText += _valueAdd; break;
+        //                    //case "H_H_SOUR_NAME": z_gedheadText += _valueAdd; break;
+        //                    //case "H_H_SOUR_VERS": z_gedheadText += _valueAdd; break;
+        //                    //case "H_H_SOUR__RTL": z_gedheadText += _valueAdd; break;
+        //                    //case "H_H_SOUR_CORP": z_gedheadText += _valueAdd; break;
+
+        //                    //case "H_H_DEST": z_gedheadText += _valueAdd; break;
+        //                    //case "H_H__PRO": z_gedheadText += _valueAdd; break;
+
+
+
+        //                    // ALBUM
+        //                    //case "H_H_GEDC_VERS": z_gedheadText += _valueAdd; break;
+        //                    //case "H_H_GEDC_FORM": z_gedheadText += _valueAdd; break;
+        //                    //case "H_H_SOUR_NAME": z_gedheadText += _valueAdd; break;
+        //                    //case "H_H_SOUR_VERS": z_gedheadText += _valueAdd; break;
+        //                    //case "H_H_SOUR__RTL": z_gedheadText += _valueAdd; break;
+        //                    //case "H_H_SOUR_CORP": z_gedheadText += _valueAdd; break;
+
+
+
+
+        //                    case "I_I_BIRT_DATE":
+        //                        if (_valueAdd.Length == 9)
+        //                        {
+        //                            _pe1_list[_pe_list_index].I_BIRT_DATE = ",0" + _valueAdd;
+        //                        }
+        //                        else
+        //                        {
+        //                            _pe1_list[_pe_list_index].I_BIRT_DATE = "," + _valueAdd;
+        //                        }
+        //                        //_pe1_list[_pe_list_index].I_DEAT_DATE = _valueAdd; 
+        //                        //break;
+        //                        //_pe1_list[_pe_list_index].I_BIRT_DATE = _valueAdd;
+        //                        break;
+        //                    case "I_I_NAME_GIVN":
+        //                        _pe1_list[_pe_list_index].I_NAME_GIVN = _valueAdd;
+        //                        _pe1_list[_pe_list_index].I_NAME_GIVN = _valueAdd;
+
+        //                        if (boolCheckGIVEN == false)
+        //                        {
+        //                            boolCheckGIVEN = true;
+        //                            //if (z_slow < 2)
+        //                            //{
+        //                            //    if (_valueAdd.Contains("doppelt") || _valueAdd.Contains("ein zwei") || _valueAdd.Contains("die selbe"))
+        //                            //    {
+        //                            //        if (DontCheck_Given(_pe1_list[_pe_list_index].AA_I_INDEX) == false)
+        //                            //        {
+        //                            //            errortext = separator + "GIVEN contains ..."
+        //                            //                + separator + _pe1_list[_pe_list_index].I_NAME_NSFX
+        //                            //                + "verh.;" + _pe1_list[_pe_list_index].I_NAME_MARNM
+        //                            //                + separator + _pe1_list[_pe_list_index].I_NAME_SURN
+        //                            //                + separator + _pe1_list[_pe_list_index].I_NAME_GIVN
+        //                            //                + separator + _pe1_list[_pe_list_index].AA_I_INDEX
+        //                            //                ;
+        //                            //            Console.WriteLine(errortext);
+        //                            //            AddError(_count.ToString(), "CHECKING", errortext);
+        //                            //        }
+        //                            //    }
+        //                            //}
+        //                            //else
+        //                            //{
+        //                            //    _info_0_text = "    z_slow is ;" + z_slow + "; NO_0008;CheckGiven: no output for each single entry";
+        //                            //    Console.WriteLine(_info_0_text);
+        //                            //    z_info_new = new("INFO;", ";", _info_0_text);
+
+        //                            //    //boolCheckGIVEN = true;
+        //                            //}
+        //                        }
+        //                        break;
+        //                    case "I_I_NAME_NICK": _pe1_list[_pe_list_index].I_NAME_NICK = _valueAdd; break;
+        //                    case "I_I_NAME__MAR": _pe1_list[_pe_list_index].I_NAME_MARNM = _valueAdd; break;
+        //                    case "I_I_NAME_SURN": _pe1_list[_pe_list_index].I_NAME_SURN = _valueAdd; break;
+
+        //                    case "I_I_NAME_NPFX": _pe1_list[_pe_list_index].I_NAME_NPFX = _valueAdd; break;
+        //                    case "I_I_NAME__FOR": _pe1_list[_pe_list_index].I_NAME__FOR = _valueAdd; break;
+
+        //                    case "I_I_BIRT_PLAC": _pe1_list[_pe_list_index].I_BIRT_PLAC = _valueAdd; break;
+        //                    //case "I_I_BIRT_PLAC": _pe1_list[_pe_list_index].I_BIRT_PLAC = N62_CleanPlace(_valueAdd, out _valueAdd); break;
+        //                    //case "I_I_BIRT_RIN ": /*_pe1_list[_pe_list_index].I_BIRT_RIN = _valueAdd;*/ break;
+        //                    //case "I_I_BIRT__UID": /*_pe1_list[_pe_list_index].I_BIRT_UID = _valueAdd;*/ break;
+        //                    case "I_I_BIRT_NOTE": /*_valueAdd = _valueAdd.Replace(";", "#");*/ _pe1_list[_pe_list_index].I_BIRT_NOTE = _valueAdd; break;
+
+        //                    case "I_I_DEAT_DATE":
+        //                        if (_valueAdd.Length == 9)
+        //                        {
+        //                            _pe1_list[_pe_list_index].I_DEAT_DATE = ",0" + _valueAdd;
+        //                        }
+        //                        else
+        //                        {
+        //                            _pe1_list[_pe_list_index].I_DEAT_DATE = "," + _valueAdd;
+        //                        }
+        //                        //_pe1_list[_pe_list_index].I_DEAT_DATE = _valueAdd; 
+        //                        break;
+        //                    case "I_I_DEAT_PLAC": _pe1_list[_pe_list_index].I_DEAT_PLAC = _valueAdd; break;
+        //                    //case "I_I_DEAT_PLAC": _pe1_list[_pe_list_index].I_DEAT_PLAC = N62_CleanPlace(_valueAdd, out _valueAdd); break;
+        //                    case "I_I_DEAT_CAUS": _pe1_list[_pe_list_index].I_DEAT_CAUS = _valueAdd; break;
+        //                    //case "I_I_DEAT_AGE ": /*_pe1_list[_pe_list_index].I_DEAT_AGE = _valueAdd;*/ break;
+        //                    //case "I_I_DEAT__UID": /*_pe1_list[_pe_list_index].I_DEAT_UID = _valueAdd;*/ break;
+        //                    //case "I_I_DEAT_RIN ": /*_pe1_list[_pe_list_index].I_DEAT_RIN = _valueAdd;*/ break;
+        //                    case "I_I_DEAT_NOTE": /*_valueAdd = _valueAdd.Replace(";", "#");*/ _pe1_list[_pe_list_index].I_DEAT_NOTE = _valueAdd; break;
+        //                    //case "I_I_BURI_DATE": /*_pe1_list[_pe_list_index].I_BURI_DATE = _valueAdd.Trim();*/ break;
+        //                    case "I_I_BURI_PLAC": _pe1_list[_pe_list_index].I_BURI_PLAC = _valueAdd; break;
+        //                    //case "I_I_BURI_PLAC": _pe1_list[_pe_list_index].I_BURI_PLAC = N62_CleanPlace(_valueAdd, out _valueAdd); break;
+        //                    //case "I_I_BURI_RIN ": /*_pe1_list[_pe_list_index].I_BIRT_RIN = _valueAdd;*/ break;
+        //                    //case "I_I_BURI__UID": /*_pe1_list[_pe_list_index].I_BIRT_UID = _valueAdd;*/ break;
+
+        //                    //case "I_I_DIV_DATE": _pe1_list[_pe_list_index].I_DIV_DATE = _valueAdd; break;
+        //                    //case "I_I_DIV_PLAC": _pe1_list[_pe_list_index].I_DIV_PLAC = _valueAdd; break;
+        //                    //case "I_I_RESI_EMAI": /*_pe1_list[_pe_list_index].I_EMAIL = _valueAdd;*/ break;
+        //                    //case "I_I_BAPM_PLAC": /*_pe1_list[_pe_list_index].I_BAPM_PLAC = _valueAdd;*/ break;
+        //                    //case "I_I_BAPM_DATE": /*_pe1_list[_pe_list_index].I_BAPM_DATE = _valueAdd;*/ break;
+        //                    //case "I_I_CONF_PLAC": /*_pe1_list[_pe_list_index].I_CONF_PLAC = _valueAdd;*/ break;
+        //                    //case "I_I_CONF_DATE": /*_pe1_list[_pe_list_index].I_CONF_DATE = _valueAdd;*/ break;
+
+        //                    case "I_I_OCCU_DATE": _pe1_list[_pe_list_index].I_OCCU_DATE = _valueAdd; break;
+        //                    case "I_I_OCCU_PLAC": _pe1_list[_pe_list_index].I_OCCU_PLAC = _valueAdd; break;
+        //                    //case "I_I_OCCU_PLAC": _pe1_list[_pe_list_index].I_OCCU_PLAC = N62_CleanPlace(_valueAdd, out _valueAdd); break;
+        //                    //case "I_I_OCCU_AGE ": /*_pe1_list[_pe_list_index].I_OCCU_AGE = _valueAdd;*/ break;
+
+        //                    //case "I_I_CENS_PLAC": /*_pe1_list[_pe_list_index].I_CENS_PLAC = _valueAdd;*/ break;
+        //                    //case "I_I_CENS_DATE": /*_pe1_list[_pe_list_index].I_CENS_DATE = _valueAdd;*/ break;
+
+
+
+        //                    //case "I_I_RESI_DATE": /*_pe1_list[_pe_list_index].I_RESI_DATE = _valueAdd;*/ break;
+        //                    //case "I_I_RESI_AGE ": /*_pe1_list[_pe_list_index].I_RESI_AGE = _valueAdd;*/ break;
+
+        //                    //case "I_I_ADDR_CONT": /*_pe1_list[_pe_list_index].I_RESI_ADDR = "Adress available";*/ break; // same like RESI ?
+        //                    //case "I_I_RESI_ADDR": /*_pe1_list[_pe_list_index].I_RESI_ADDR = _valueAdd;*/ break;
+
+        //                    //case "I_I_RESI_PLAC": _pe1_list[_pe_list_index].I_RESI_ADDR = " ### PLACE instead Address?:" + _valueAdd; break;
+        //                    //case "I_I_RESI_PHON": _pe1_list[_pe_list_index].I_RESI_PHON = _valueAdd; break;
+        //                    //case "I_I_RESI_FAX ": /*_pe1_list[_pe_list_index].I_RESI_FAX = _valueAdd;*/ break;
+        //                    //case "I_I_RESI_NOTE": /*_pe1_list[_pe_list_index].I_RESI_NOTE = _valueAdd;*/ break;
+        //                    case "I_I_FAMC_PEDI": _pe1_list[_pe_list_index].I_FAMC_PEDI = _valueAdd; break;
+
+        //                    case "I_I_EVEN_DATE": _pe1_list[_pe_list_index].I_EVEN_DATE = _valueAdd; break;
+        //                    case "I_I_EVEN_NOTE": _pe1_list[_pe_list_index].I_EVEN_NOTE = _valueAdd; break;
+        //                    //case "I_I_EVEN_AGE ": /*_pe1_list[_pe_list_index].I_EVEN_AGE = _valueAdd;*/ break;
+
+        //                    //case "I_I_EVEN__UID": /*_pe1_list[_pe_list_index].I_EVEN_UID = _valueAdd;*/ break;
+        //                    //case "I_I_EVEN_RIN ": /*_pe1_list[_pe_list_index].I_EVEN_RIN = _valueAdd;*/ break;
+        //                    case "I_I_EVEN_TYPE": _pe1_list[_pe_list_index].I_EVEN_TYPE = _valueAdd; break;
+        //                    case "I_I_EVEN_PLAC": _pe1_list[_pe_list_index].I_EVEN_PLAC = _valueAdd; break;
+        //                    //case "I_I_EVEN_PLAC": _pe1_list[_pe_list_index].I_EVEN_PLAC = N62_CleanPlace(_valueAdd, out _valueAdd); break;
+
+        //                    case "I_I_EMIG_DATE": _pe1_list[_pe_list_index].I_EMIG = _valueAdd; break;
+        //                    case "I_I_EMIG_PLAC": _pe1_list[_pe_list_index].I_EMIG_PLAC = _valueAdd; break;
+        //                    //case "I_I_EMIG_PLAC": _pe1_list[_pe_list_index].I_EMIG_PLAC = N62_CleanPlace(_valueAdd, out _valueAdd); break;
+
+        //                    case "I_I_IMMI_DATE": _pe1_list[_pe_list_index].I_IMMI = _valueAdd; break;
+        //                    case "I_I_IMMI_PLAC": _pe1_list[_pe_list_index].I_IMMI_PLAC = _valueAdd; break;
+        //                    //case "I_I_IMMI_PLAC": _pe1_list[_pe_list_index].I_IMMI_PLAC = N62_CleanPlace(_valueAdd, out _valueAdd); break;
+
+        //                    //case "I_I_SOUR_DATA": /*_pe1_list[_pe_list_index].I_SOUR_DATA = _valueAdd;*/ break;
+        //                    //case "I_I_SOUR_EVEN": /*_pe1_list[_pe_list_index].I_SOUR_EVEN = _valueAdd;*/ break;
+        //                    //case "I_I_SOUR_PAGE": /*_pe1_list[_pe_list_index].I_SOUR_PAGE = _valueAdd;*/ break;
+        //                    //case "I_I_SOUR_QUAL": /*_pe1_list[_pe_list_index].I_SOUR_QUAL = _valueAdd;*/ break;
+        //                    //case "I_I_SOUR_QUAY": /*_pe1_list[_pe_list_index].I_SOUR_QUAY = _valueAdd;*/ break;
+        //                    //case "I_I_SOUR_RIN ": /*_pe1_list[_pe_list_index].I_BIRT_RIN = _valueAdd;*/ break;
+        //                    //case "I_I_SOUR__UID": /*_pe1_list[_pe_list_index].I_BIRT_UID = _valueAdd;*/ break;
+
+
+        //                    case "I_I_OBJE_FORM": _pe1_list[_pe_list_index].I_OBJE_FILE = _valueAdd;/*_pe1_list[_pe_list_index].I_OBJE_FORM = _valueAdd;*/ break;
+        //                    //case "I_I_OBJE_FILE": /*_pe1_list[_pe_list_index].I_OBJE_FILE = _valueAdd;*/ break;
+        //                    //case "I_I_OBJE_TITL": /*_pe1_list[_pe_list_index].I_OBJE_TITL = _valueAdd;*/ break;
+        //                    //case "I_I_OBJE_NOTE": /*_pe1_list[_pe_list_index].I_OBJE_NOTE = _valueAdd;*/ break;
+        //                    //case "I_I_OBJE__PRI": /*_pe1_list[_pe_list_index].I_OBJE__PRI = _valueAdd;*/ break;
+        //                    //case "I_I_OBJE__CUT": /*_pe1_list[_pe_list_index].I_OBJE__CUT = _valueAdd;*/ break;
+        //                    //case "I_I_OBJE__PAR": /*_pe1_list[_pe_list_index].I_OBJE__PAR = _valueAdd;*/ break;
+        //                    //case "I_I_OBJE__PER": /*_pe1_list[_pe_list_index].I_OBJE__PER = _valueAdd;*/ break;
+        //                    //case "I_I_OBJE__PHO": /*_pe1_list[_pe_list_index].I_OBJE__PHO = _valueAdd;*/ break;
+        //                    //case "I_I_OBJE__POS": /*_pe1_list[_pe_list_index].I_OBJE__POS = _valueAdd;*/ break;
+        //                    //case "I_I_OBJE__DAT": /*_pe1_list[_pe_list_index].I_OBJE__DAT = _valueAdd;*/ break;
+        //                    //case "I_I_OBJE__ALB": /*_pe1_list[_pe_list_index].I_OBJE__ALB = _valueAdd;*/ break;
+        //                    //case "I_I_OBJE__FIL": /*_pe1_list[_pe_list_index].I_OBJE__FIL = _valueAdd;*/ break;  // FILESIZE
+        //                    ////case "I_I_OBJE__PLA": /*_pe1_list[_pe_list_index].I_OBJE__PLA = _valueAdd;*/ break;  // PLACE
+
+
+        //                    //case "I_I_ORDN_DATE": /*_pe1_list[_pe_list_index].I_OBJE__FIL = _valueAdd;*/ break;
+
+
+        //                    case "I_I_DATE_TIME": _pe1_list[_pe_list_index].I_DATE_TIME = _valueAdd; break;
+        //                    case "I_I_CHAN_DATE": _pe1_list[_pe_list_index].I_DATE_TIME = "### DATE: CHAN instead D+T: " + _valueAdd; break;
+        //                    case "I_I_NOTE_CONC": _pe1_list[_pe_list_index].I_NOTE_CONC = _valueAdd; break;
+        //                    //case "I_I_FILE": z_gedheadText += _valueAdd; break;
+
+        //                    case "I_I_NAME_NSFX":
+        //                        _pe1_list[_pe_list_index].I_NAME_NSFX = _valueAdd;
+
+        //                        //if (z_slow > 0)
+        //                        //{
+        //                        //    if (_valueAdd.Contains("unklar") || _valueAdd.Contains("Klärung") || _valueAdd.Contains("lebt?"))
+        //                        //    {
+        //                        //        if (DontCheck_NSFX(_pe1_list[_pe_list_index].AA_I_INDEX) == false)
+        //                        //        {
+        //                        //            _info_0_text = z_blank //+ "____________________"
+        //                        //            + z_blank + _pe1_list[_pe_list_index].I_NAME_NSFX
+        //                        //            + " verh. " + _pe1_list[_pe_list_index].I_NAME_MARNM
+        //                        //            + z_blank + _pe1_list[_pe_list_index].I_NAME_SURN
+        //                        //            + z_blank + _pe1_list[_pe_list_index].I_NAME_GIVN
+        //                        //            //+ " born: " + _pe1_list[_pe_list_index].I_BIRT_DATE  // these Values are added later
+        //                        //            //+ " marr: " + _pe1_list[_pe_list_index].I_MARR_DATE
+        //                        //            //+ " died: " + _pe1_list[_pe_list_index].I_DEAT_DATE
+        //                        //            + z_blank + _pe1_list[_pe_list_index].AA_I_INDEX
+        //                        //            ;
+        //                        //            Console.WriteLine(_info_0_text);
+        //                        //            AddError("7777777", "NO_0012 Suffix contains 'unklar'", _info_0_text);
+        //                        //        }
+        //                        //    }
+        //                        //}
+        //                        break;
+
+        //                    //if (_pe1_list[_pe_list_index].I_BIRT_DATE == "")
+        //                    //{
+        //                    //    _info_0_text = "    z_slow is ;" + z_slow + "; NO_0013;CheckBirthDat: no BirthDate yet for https://www.myheritage.de/site-family-tree-104441723/85244?rootIndivudalID=1" + _pe1_list[_pe_list_index].AA_I_INDEX;
+        //                    //    Console.WriteLine(_info_0_text);
+        //                    //    AddError("1231232", "INFO", _info_0_text);
+
+        //                    //    _pe1_list[_pe_list_index].I_SEX += "U";  // 3 groups ..each 65.000 for Excel limits: M, F and U plus MU and FU
+        //                    //}
+
+
+        //                    default:
+        //                        //MessageBox.Show("Unknown z_key at z_2 = {0}", z_1);
+        //                        //if (_z0z1z2 != "F_F_MARR_ADDR" || _z0z1z2 != "H_H__NAV__NAV" || _z0z1z2 != "H_H_DATE_TIME")
+        //                        unknownKeyText = z_newline + "z_key not used at _z0z1z2 = " + _z0z1z2 + " at line: " + _count.ToString() + ": z_value = " + _valueAdd;
+        //                        //Console.WriteLine(/*z_newline + */"z_key not used at _z0z1z2 = " + _z0z1z2 + " at line: " + _count.ToString() + ": z_value = " + _valueAdd);
+        //                        //   >> message below
+
+        //                        // z_2 ignored
+
+        //                        //if (_z0z1z2 == "H_H_DATE_TIME") unknownKeyText = "";
+        //                        //if (_z0z1z2 == "H_H_DATE__TIM") unknownKeyText = "";
+        //                        //if (_z0z1z2 == "H_H_SOUR__TRE") unknownKeyText = "";
+        //                        //if (_z0z1z2 == "H_H__NAV__NAV") unknownKeyText = "";
+        //                        //if (_z0z1z2 == "F_F_MARR_ADDR") unknownKeyText = "";
+        //                        //if (_z0z1z2 == "I_I_OCCU__UID") unknownKeyText = "";
+        //                        //if (_z0z1z2 == "I_I_OCCU_RIN ") unknownKeyText = "";
+        //                        //if (_z0z1z2 == "I_I_RESI__UID") unknownKeyText = "";
+        //                        //if (_z0z1z2 == "I_I_RESI_RIN ") unknownKeyText = "";
+        //                        //if (_z0z1z2 == "I_I_RESI_TYPE") unknownKeyText = "";
+        //                        //if (_z0z1z2 == "I_I_RESI_SOUR") unknownKeyText = "";
+        //                        //if (_z0z1z2 == "I_I_NAME_SOUR") unknownKeyText = "";
+        //                        //if (_z0z1z2 == "I_I_BIRT_SOUR") unknownKeyText = "";
+        //                        //if (_z0z1z2 == "I_I_BAPM_SOUR") unknownKeyText = "";
+        //                        //if (_z0z1z2 == "I_I_DEAT_SOUR") unknownKeyText = "";
+        //                        //if (_z0z1z2 == "I_I_BURI_SOUR") unknownKeyText = "";
+        //                        //if (_z0z1z2 == "F_F_DIV__UID") unknownKeyText = "";
+        //                        //if (_z0z1z2 == "F_F_DIV_RIN ") unknownKeyText = "";
+        //                        //if (_z0z1z2 == "F_F_ENGA__UID") unknownKeyText = "";
+        //                        //if (_z0z1z2 == "F_F_ENGA_RIN ") unknownKeyText = "";
+        //                        //if (_z0z1z2 == "F_F_MARL__UID") unknownKeyText = "";
+        //                        //if (_z0z1z2 == "F_F_MARL_RIN ") unknownKeyText = "";
+
+        //                        //if (_z0z1z2 == "I_I_SOUR_PAGE ") unknownKeyText = "";
+        //                        //if (_z0z1z2 == "I_I_SOUR_QUAY ") unknownKeyText = "";
+        //                        //if (_z0z1z2 == "I_I_SOUR_DATA ") unknownKeyText = "";
+
+
+        //                        //if (unknownKeyText != "")
+        //                        //    Console.WriteLine(/*z_newline + */"Unknown z_key at _z0z1z2 = " + _z0z1z2 + " at line: " + _count.ToString() + ": z_value = " + _valueAdd);
+
+        //                        break;
+
+        //                }
+        //            }
+
+        //            if (z_0 == "F_")
+        //            {
+
+        //                switch (_z0z1z2)
+        //                {
+        //                    // FAM
+        //                    case "F_F_MARR_DATE":
+        //                        if (_valueAdd.Length == 9)
+        //                        {
+        //                            _fam_list[_fam_list_index].F_MARR_DATE = ",0" + _valueAdd;
+        //                        }
+        //                        else
+        //                        {
+        //                            _fam_list[_fam_list_index].F_MARR_DATE = "," + _valueAdd;
+        //                        }
+        //                        //_pe1_list[_pe_list_index].I_DEAT_DATE = _valueAdd; 
+        //                        //break;
+        //                        //_fam_list[_fam_list_index].F_MARR_DATE = _valueAdd; 
+        //                        break;
+        //                    case "F_F_MARR_PLAC": _fam_list[_fam_list_index].F_MARR_PLAC = _valueAdd; break;
+        //                    //case "F_F_MARR_PLAC": _fam_list[_fam_list_index].F_MARR_PLAC = N62_CleanPlace(_valueAdd, out _valueAdd); break;
+        //                    case "F_F_MARR_NOTE": _valueAdd = _valueAdd.Replace(",", "#"); _fam_list[_fam_list_index].F_MARR_NOTE = _valueAdd; break;
+        //                    //case "F_F_MARR__UID": /*_fam_list[_fam_list_index].F_MARR__UID = _valueAdd;*/ break;
+        //                    //case "F_F_MARR_RIN ": /*_fam_list[_fam_list_index].F_MARR_RIN = _valueAdd;*/ break;
+        //                    case "F_F_EVEN_TYPE": _fam_list[_fam_list_index].F_EVEN_TYPE = _valueAdd; break;
+        //                    case "F_F_EVEN_DATE": _fam_list[_fam_list_index].F_EVEN_DATE = _valueAdd; break;
+        //                    case "F_F_EVEN_PLAC": _fam_list[_fam_list_index].F_EVEN_PLAC = _valueAdd; break;
+        //                    //case "F_F_EVEN_PLAC": _fam_list[_fam_list_index].F_EVEN_PLAC = N62_CleanPlace(_valueAdd, out _valueAdd); break;
+        //                    //case "F_F_EVEN__UID": /*_fam_list[_fam_list_index].F_EVEN__UID = _valueAdd;*/ break;
+        //                    //case "F_F_EVEN_RIN ": /*_fam_list[_fam_list_index].F_EVEN_RIN = _valueAdd;*/ break;
+        //                    case "F_F_EVEN_NOTE": _fam_list[_fam_list_index].F_EVEN_NOTE = _valueAdd; break;
+        //                    // MARL
+        //                    case "F_F_MARL_DATE": _fam_list[_fam_list_index].F_MARL_DATE = _valueAdd; break;
+        //                    case "F_F_MARL_PLAC": _fam_list[_fam_list_index].F_MARL_PLAC = _valueAdd; break;
+        //                    //case "F_F_MARL_PLAC": _fam_list[_fam_list_index].F_MARL_PLAC = N62_CleanPlace(_valueAdd, out _valueAdd); break;
+        //                    case "F_F_MARL_NOTE": _fam_list[_fam_list_index].F_MARL_NOTE = _valueAdd; break;
+        //                    // DIV
+        //                    case "F_F_DIV_DATE": _fam_list[_fam_list_index].F_DIV_DATE = _valueAdd; break;
+        //                    case "F_F_DIV_PLAC": _fam_list[_fam_list_index].F_DIV_PLAC = _valueAdd; break;
+        //                    //case "F_F_DIV_PLAC": _fam_list[_fam_list_index].F_DIV_PLAC = N62_CleanPlace(_valueAdd, out _valueAdd); break;
+        //                    case "F_F_DIV_NOTE": _fam_list[_fam_list_index].F_DIV_NOTE = _valueAdd; break;
+        //                    // ENGA
+        //                    case "F_F_ENGA_DATE": _fam_list[_fam_list_index].F_ENGA_DATE = _valueAdd; break;
+        //                    case "F_F_ENGA_PLAC": _fam_list[_fam_list_index].F_ENGA_PLAC = _valueAdd; break;
+        //                    case "F_F_ENGA_NOTE": _fam_list[_fam_list_index].F_ENGA_NOTE = _valueAdd; break;
+        //                    // ANUL
+        //                    case "F_F_ANUL_DATE": _fam_list[_fam_list_index].F_ANUL_DATE = _valueAdd; break;
+        //                    case "F_F_ANUL_PLAC": _fam_list[_fam_list_index].F_ANUL_PLAC = _valueAdd; break;
+        //                    case "F_F_ANUL_NOTE": _fam_list[_fam_list_index].F_ANUL_NOTE = _valueAdd; break;
+
+        //                    ////    // SOUR
+
+        //                    ////case "S_S_SOUR_CONC": z_source_list[_source_list_index].S_SOUR_CONC = _valueAdd; break;
+        //                    ////case "S_S_TEXT_CONC": z_source_list[_source_list_index].S_TEXT_CONC = _valueAdd; break;
+
+
+        //                    //// HEADER
+        //                    ////case "H_H_GEDC_VERS": z_gedheadText += _valueAdd; break;
+        //                    ////case "H_H_GEDC_FORM": z_gedheadText += _valueAdd; break;
+        //                    ////case "H_H_SOUR_NAME": z_gedheadText += _valueAdd; break;
+        //                    ////case "H_H_SOUR_VERS": z_gedheadText += _valueAdd; break;
+        //                    ////case "H_H_SOUR__RTL": z_gedheadText += _valueAdd; break;
+        //                    ////case "H_H_SOUR_CORP": z_gedheadText += _valueAdd; break;
+
+        //                    ////case "H_H_DEST": z_gedheadText += _valueAdd; break;
+        //                    ////case "H_H__PRO": z_gedheadText += _valueAdd; break;
+
+
+
+        //                    //// ALBUM
+        //                    ////case "H_H_GEDC_VERS": z_gedheadText += _valueAdd; break;
+        //                    ////case "H_H_GEDC_FORM": z_gedheadText += _valueAdd; break;
+        //                    ////case "H_H_SOUR_NAME": z_gedheadText += _valueAdd; break;
+        //                    ////case "H_H_SOUR_VERS": z_gedheadText += _valueAdd; break;
+        //                    ////case "H_H_SOUR__RTL": z_gedheadText += _valueAdd; break;
+        //                    ////case "H_H_SOUR_CORP": z_gedheadText += _valueAdd; break;
+
+
+
+
+        //                    //case "I_I_BIRT_DATE":
+        //                    //    _pe1_list[_pe_list_index].I_BIRT_DATE = _valueAdd.Trim();
+        //                    //    break;
+        //                    //case "I_I_NAME_GIVN":
+        //                    //    _pe1_list[_pe_list_index].I_NAME_GIVN = _valueAdd;
+        //                    //    _pe1_list[_pe_list_index].I_NAME_GIVN = _valueAdd;
+
+        //                    //    if (boolCheckGIVEN == false)
+        //                    //    {
+        //                    //        boolCheckGIVEN = true;
+        //                    //        //if (z_slow < 2)
+        //                    //        //{
+        //                    //        //    if (_valueAdd.Contains("doppelt") || _valueAdd.Contains("ein zwei") || _valueAdd.Contains("die selbe"))
+        //                    //        //    {
+        //                    //        //        if (DontCheck_Given(_pe1_list[_pe_list_index].AA_I_INDEX) == false)
+        //                    //        //        {
+        //                    //        //            errortext = separator + "GIVEN contains ..."
+        //                    //        //                + separator + _pe1_list[_pe_list_index].I_NAME_NSFX
+        //                    //        //                + "verh.;" + _pe1_list[_pe_list_index].I_NAME_MARNM
+        //                    //        //                + separator + _pe1_list[_pe_list_index].I_NAME_SURN
+        //                    //        //                + separator + _pe1_list[_pe_list_index].I_NAME_GIVN
+        //                    //        //                + separator + _pe1_list[_pe_list_index].AA_I_INDEX
+        //                    //        //                ;
+        //                    //        //            Console.WriteLine(errortext);
+        //                    //        //            AddError(_count.ToString(), "CHECKING", errortext);
+        //                    //        //        }
+        //                    //        //    }
+        //                    //        //}
+        //                    //        //else
+        //                    //        //{
+        //                    //        //    _info_0_text = "    z_slow is ;" + z_slow + "; NO_0008;CheckGiven: no output for each single entry";
+        //                    //        //    Console.WriteLine(_info_0_text);
+        //                    //        //    z_info_new = new("INFO;", ";", _info_0_text);
+
+        //                    //        //    //boolCheckGIVEN = true;
+        //                    //        //}
+        //                    //    }
+        //                    //    break;
+        //                    //case "I_I_NAME_NICK": _pe1_list[_pe_list_index].I_NAME_NICK = _valueAdd; break;
+        //                    //case "I_I_NAME__MAR": _pe1_list[_pe_list_index].I_NAME_MARNM = _valueAdd; break;
+        //                    //case "I_I_NAME_SURN": _pe1_list[_pe_list_index].I_NAME_SURN = _valueAdd; break;
+
+        //                    //case "I_I_NAME_NPFX": _pe1_list[_pe_list_index].I_NAME_NPFX = _valueAdd; break;
+        //                    //case "I_I_NAME__FOR": _pe1_list[_pe_list_index].I_NAME__FOR = _valueAdd; break;
+
+        //                    //case "I_I_BIRT_PLAC": _pe1_list[_pe_list_index].I_BIRT_PLAC = _valueAdd; break;
+        //                    ////case "I_I_BIRT_RIN ": /*_pe1_list[_pe_list_index].I_BIRT_RIN = _valueAdd;*/ break;
+        //                    ////case "I_I_BIRT__UID": /*_pe1_list[_pe_list_index].I_BIRT_UID = _valueAdd;*/ break;
+        //                    //case "I_I_BIRT_NOTE": _valueAdd = _valueAdd.Replace(";", "#"); _pe1_list[_pe_list_index].I_BIRT_NOTE = _valueAdd; break;
+
+        //                    //case "I_I_DEAT_DATE": _pe1_list[_pe_list_index].I_DEAT_DATE = _valueAdd.Trim(); break;
+        //                    //case "I_I_DEAT_PLAC": _pe1_list[_pe_list_index].I_DEAT_PLAC = _valueAdd; break;
+        //                    //case "I_I_DEAT_CAUS": _pe1_list[_pe_list_index].I_DEAT_CAUS = _valueAdd; break;
+        //                    ////case "I_I_DEAT_AGE ": /*_pe1_list[_pe_list_index].I_DEAT_AGE = _valueAdd;*/ break;
+        //                    ////case "I_I_DEAT__UID": /*_pe1_list[_pe_list_index].I_DEAT_UID = _valueAdd;*/ break;
+        //                    ////case "I_I_DEAT_RIN ": /*_pe1_list[_pe_list_index].I_DEAT_RIN = _valueAdd;*/ break;
+        //                    //case "I_I_DEAT_NOTE": _valueAdd = _valueAdd.Replace(";", "#"); _pe1_list[_pe_list_index].I_DEAT_NOTE = _valueAdd; break;
+        //                    ////case "I_I_BURI_DATE": /*_pe1_list[_pe_list_index].I_BURI_DATE = _valueAdd.Trim();*/ break;
+        //                    //case "I_I_BURI_PLAC": _pe1_list[_pe_list_index].I_BURI_PLAC = _valueAdd; break;
+        //                    ////case "I_I_BURI_RIN ": /*_pe1_list[_pe_list_index].I_BIRT_RIN = _valueAdd;*/ break;
+        //                    ////case "I_I_BURI__UID": /*_pe1_list[_pe_list_index].I_BIRT_UID = _valueAdd;*/ break;
+
+        //                    ////case "I_I_DIV_DATE": _pe1_list[_pe_list_index].I_DIV_DATE = _valueAdd; break;
+        //                    ////case "I_I_DIV_PLAC": _pe1_list[_pe_list_index].I_DIV_PLAC = _valueAdd; break;
+        //                    ////case "I_I_RESI_EMAI": /*_pe1_list[_pe_list_index].I_EMAIL = _valueAdd;*/ break;
+        //                    ////case "I_I_BAPM_PLAC": /*_pe1_list[_pe_list_index].I_BAPM_PLAC = _valueAdd;*/ break;
+        //                    ////case "I_I_BAPM_DATE": /*_pe1_list[_pe_list_index].I_BAPM_DATE = _valueAdd;*/ break;
+        //                    ////case "I_I_CONF_PLAC": /*_pe1_list[_pe_list_index].I_CONF_PLAC = _valueAdd;*/ break;
+        //                    ////case "I_I_CONF_DATE": /*_pe1_list[_pe_list_index].I_CONF_DATE = _valueAdd;*/ break;
+        //                    //case "I_I_OCCU_PLAC": _pe1_list[_pe_list_index].I_OCCU_PLAC = _valueAdd; break;
+        //                    //case "I_I_OCCU_DATE": _pe1_list[_pe_list_index].I_OCCU_DATE = _valueAdd; break;
+        //                    ////case "I_I_OCCU_AGE ": /*_pe1_list[_pe_list_index].I_OCCU_AGE = _valueAdd;*/ break;
+
+        //                    ////case "I_I_CENS_PLAC": /*_pe1_list[_pe_list_index].I_CENS_PLAC = _valueAdd;*/ break;
+        //                    ////case "I_I_CENS_DATE": /*_pe1_list[_pe_list_index].I_CENS_DATE = _valueAdd;*/ break;
+
+
+
+        //                    ////case "I_I_RESI_DATE": /*_pe1_list[_pe_list_index].I_RESI_DATE = _valueAdd;*/ break;
+        //                    ////case "I_I_RESI_AGE ": /*_pe1_list[_pe_list_index].I_RESI_AGE = _valueAdd;*/ break;
+
+        //                    ////case "I_I_ADDR_CONT": /*_pe1_list[_pe_list_index].I_RESI_ADDR = "Adress available";*/ break; // same like RESI ?
+        //                    ////case "I_I_RESI_ADDR": /*_pe1_list[_pe_list_index].I_RESI_ADDR = _valueAdd;*/ break;
+
+        //                    ////case "I_I_RESI_PLAC": _pe1_list[_pe_list_index].I_RESI_ADDR = " ### PLACE instead Address?:" + _valueAdd; break;
+        //                    ////case "I_I_RESI_PHON": _pe1_list[_pe_list_index].I_RESI_PHON = _valueAdd; break;
+        //                    ////case "I_I_RESI_FAX ": /*_pe1_list[_pe_list_index].I_RESI_FAX = _valueAdd;*/ break;
+        //                    ////case "I_I_RESI_NOTE": /*_pe1_list[_pe_list_index].I_RESI_NOTE = _valueAdd;*/ break;
+        //                    //case "I_I_FAMC_PEDI": _pe1_list[_pe_list_index].I_FAMC_PEDI = _valueAdd; break;
+
+        //                    //case "I_I_EVEN_DATE": _pe1_list[_pe_list_index].I_EVEN_DATE = _valueAdd; break;
+        //                    //case "I_I_EVEN_NOTE": _pe1_list[_pe_list_index].I_EVEN_NOTE = _valueAdd; break;
+        //                    ////case "I_I_EVEN_AGE ": /*_pe1_list[_pe_list_index].I_EVEN_AGE = _valueAdd;*/ break;
+
+        //                    ////case "I_I_EVEN__UID": /*_pe1_list[_pe_list_index].I_EVEN_UID = _valueAdd;*/ break;
+        //                    ////case "I_I_EVEN_RIN ": /*_pe1_list[_pe_list_index].I_EVEN_RIN = _valueAdd;*/ break;
+        //                    //case "I_I_EVEN_TYPE": _pe1_list[_pe_list_index].I_EVEN_TYPE = _valueAdd; break;
+        //                    //case "I_I_EVEN_PLAC": _pe1_list[_pe_list_index].I_EVEN_PLAC = _valueAdd; break;
+
+        //                    //case "I_I_EMIG_DATE": _pe1_list[_pe_list_index].I_EMIG = _valueAdd; break;
+        //                    //case "I_I_EMIG_PLAC": _pe1_list[_pe_list_index].I_EMIG_PLAC = _valueAdd; break;
+
+        //                    //case "I_I_IMMI_DATE": _pe1_list[_pe_list_index].I_IMMI = _valueAdd; break;
+        //                    //case "I_I_IMMI_PLAC": _pe1_list[_pe_list_index].I_IMMI_PLAC = _valueAdd; break;
+
+        //                    ////case "I_I_SOUR_DATA": /*_pe1_list[_pe_list_index].I_SOUR_DATA = _valueAdd;*/ break;
+        //                    ////case "I_I_SOUR_EVEN": /*_pe1_list[_pe_list_index].I_SOUR_EVEN = _valueAdd;*/ break;
+        //                    ////case "I_I_SOUR_PAGE": /*_pe1_list[_pe_list_index].I_SOUR_PAGE = _valueAdd;*/ break;
+        //                    ////case "I_I_SOUR_QUAL": /*_pe1_list[_pe_list_index].I_SOUR_QUAL = _valueAdd;*/ break;
+        //                    ////case "I_I_SOUR_QUAY": /*_pe1_list[_pe_list_index].I_SOUR_QUAY = _valueAdd;*/ break;
+        //                    ////case "I_I_SOUR_RIN ": /*_pe1_list[_pe_list_index].I_BIRT_RIN = _valueAdd;*/ break;
+        //                    ////case "I_I_SOUR__UID": /*_pe1_list[_pe_list_index].I_BIRT_UID = _valueAdd;*/ break;
+
+
+        //                    //case "I_I_OBJE_FORM": _pe1_list[_pe_list_index].I_OBJE_FILE = _valueAdd;/*_pe1_list[_pe_list_index].I_OBJE_FORM = _valueAdd;*/ break;
+        //                    ////case "I_I_OBJE_FILE": /*_pe1_list[_pe_list_index].I_OBJE_FILE = _valueAdd;*/ break;
+        //                    //case "I_I_OBJE_TITL": /*_pe1_list[_pe_list_index].I_OBJE_TITL = _valueAdd;*/ break;
+        //                    //case "I_I_OBJE_NOTE": /*_pe1_list[_pe_list_index].I_OBJE_NOTE = _valueAdd;*/ break;
+        //                    //case "I_I_OBJE__PRI": /*_pe1_list[_pe_list_index].I_OBJE__PRI = _valueAdd;*/ break;
+        //                    //case "I_I_OBJE__CUT": /*_pe1_list[_pe_list_index].I_OBJE__CUT = _valueAdd;*/ break;
+        //                    //case "I_I_OBJE__PAR": /*_pe1_list[_pe_list_index].I_OBJE__PAR = _valueAdd;*/ break;
+        //                    //case "I_I_OBJE__PER": /*_pe1_list[_pe_list_index].I_OBJE__PER = _valueAdd;*/ break;
+        //                    //case "I_I_OBJE__PHO": /*_pe1_list[_pe_list_index].I_OBJE__PHO = _valueAdd;*/ break;
+        //                    //case "I_I_OBJE__POS": /*_pe1_list[_pe_list_index].I_OBJE__POS = _valueAdd;*/ break;
+        //                    //case "I_I_OBJE__DAT": /*_pe1_list[_pe_list_index].I_OBJE__DAT = _valueAdd;*/ break;
+        //                    //case "I_I_OBJE__ALB": /*_pe1_list[_pe_list_index].I_OBJE__ALB = _valueAdd;*/ break;
+        //                    //case "I_I_OBJE__FIL": /*_pe1_list[_pe_list_index].I_OBJE__FIL = _valueAdd;*/ break;  // FILESIZE
+        //                    ////case "I_I_OBJE__PLA": /*_pe1_list[_pe_list_index].I_OBJE__PLA = _valueAdd;*/ break;  // PLACE
+
+
+        //                    //case "I_I_ORDN_DATE": /*_pe1_list[_pe_list_index].I_OBJE__FIL = _valueAdd;*/ break;
+
+
+        //                    //case "I_I_DATE_TIME": _pe1_list[_pe_list_index].I_DATE_TIME = _valueAdd; break;
+        //                    //case "I_I_CHAN_DATE": _pe1_list[_pe_list_index].I_DATE_TIME = "### DATE: CHAN instead D+T: " + _valueAdd; break;
+        //                    //case "I_I_NOTE_CONC": _pe1_list[_pe_list_index].I_NOTE_CONC = _valueAdd; break;
+        //                    ////case "I_I_FILE": z_gedheadText += _valueAdd; break;
+
+        //                    //case "I_I_NAME_NSFX":
+        //                    //    _pe1_list[_pe_list_index].I_NAME_NSFX = _valueAdd;
+
+        //                    //if (z_slow > 0)
+        //                    //{
+        //                    //    if (_valueAdd.Contains("unklar") || _valueAdd.Contains("Klärung") || _valueAdd.Contains("lebt?"))
+        //                    //    {
+        //                    //        if (DontCheck_NSFX(_pe1_list[_pe_list_index].AA_I_INDEX) == false)
+        //                    //        {
+        //                    //            _info_0_text = z_blank //+ "____________________"
+        //                    //            + z_blank + _pe1_list[_pe_list_index].I_NAME_NSFX
+        //                    //            + " verh. " + _pe1_list[_pe_list_index].I_NAME_MARNM
+        //                    //            + z_blank + _pe1_list[_pe_list_index].I_NAME_SURN
+        //                    //            + z_blank + _pe1_list[_pe_list_index].I_NAME_GIVN
+        //                    //            //+ " born: " + _pe1_list[_pe_list_index].I_BIRT_DATE  // these Values are added later
+        //                    //            //+ " marr: " + _pe1_list[_pe_list_index].I_MARR_DATE
+        //                    //            //+ " died: " + _pe1_list[_pe_list_index].I_DEAT_DATE
+        //                    //            + z_blank + _pe1_list[_pe_list_index].AA_I_INDEX
+        //                    //            ;
+        //                    //            Console.WriteLine(_info_0_text);
+        //                    //            AddError("7777777", "NO_0012 Suffix contains 'unklar'", _info_0_text);
+        //                    //        }
+        //                    //    }
+        //                    //}
+        //                    //break;
+
+        //                    //if (_pe1_list[_pe_list_index].I_BIRT_DATE == "")
+        //                    //{
+        //                    //    _info_0_text = "    z_slow is ;" + z_slow + "; NO_0013;CheckBirthDat: no BirthDate yet for https://www.myheritage.de/site-family-tree-104441723/85244?rootIndivudalID=1" + _pe1_list[_pe_list_index].AA_I_INDEX;
+        //                    //    Console.WriteLine(_info_0_text);
+        //                    //    AddError("1231232", "INFO", _info_0_text);
+
+        //                    //    _pe1_list[_pe_list_index].I_SEX += "U";  // 3 groups ..each 65.000 for Excel limits: M, F and U plus MU and FU
+        //                    //}
+
+
+        //                    default:
+        //                        //MessageBox.Show("Unknown z_key at z_2 = {0}", z_1);
+        //                        //if (_z0z1z2 != "F_F_MARR_ADDR" || _z0z1z2 != "H_H__NAV__NAV" || _z0z1z2 != "H_H_DATE_TIME")
+        //                        unknownKeyText = z_newline + "z_key not used at _z0z1z2 = " + _z0z1z2 + " at line: " + _count.ToString() + ": z_value = " + _valueAdd;
+        //                    //Console.WriteLine(/*z_newline + */"z_key not used at _z0z1z2 = " + _z0z1z2 + " at line: " + _count.ToString() + ": z_value = " + _valueAdd);
+        //                    //   >> message below
+
+        //                    // z_2 ignored
+
+        //                    //if (_z0z1z2 == "H_H_DATE_TIME") unknownKeyText = "";
+        //                    //if (_z0z1z2 == "H_H_DATE__TIM") unknownKeyText = "";
+        //                    //if (_z0z1z2 == "H_H_SOUR__TRE") unknownKeyText = "";
+        //                    //if (_z0z1z2 == "H_H__NAV__NAV") unknownKeyText = "";
+        //                    //if (_z0z1z2 == "F_F_MARR_ADDR") unknownKeyText = "";
+        //                    //if (_z0z1z2 == "I_I_OCCU__UID") unknownKeyText = "";
+        //                    //if (_z0z1z2 == "I_I_OCCU_RIN ") unknownKeyText = "";
+        //                    //if (_z0z1z2 == "I_I_RESI__UID") unknownKeyText = "";
+        //                    //if (_z0z1z2 == "I_I_RESI_RIN ") unknownKeyText = "";
+        //                    //if (_z0z1z2 == "I_I_RESI_TYPE") unknownKeyText = "";
+        //                    //if (_z0z1z2 == "I_I_RESI_SOUR") unknownKeyText = "";
+        //                    //if (_z0z1z2 == "I_I_NAME_SOUR") unknownKeyText = "";
+        //                    //if (_z0z1z2 == "I_I_BIRT_SOUR") unknownKeyText = "";
+        //                    //if (_z0z1z2 == "I_I_BAPM_SOUR") unknownKeyText = "";
+        //                    //if (_z0z1z2 == "I_I_DEAT_SOUR") unknownKeyText = "";
+        //                    //if (_z0z1z2 == "I_I_BURI_SOUR") unknownKeyText = "";
+        //                    //if (_z0z1z2 == "F_F_DIV__UID") unknownKeyText = "";
+        //                    //if (_z0z1z2 == "F_F_DIV_RIN ") unknownKeyText = "";
+        //                    //if (_z0z1z2 == "F_F_ENGA__UID") unknownKeyText = "";
+        //                    //if (_z0z1z2 == "F_F_ENGA_RIN ") unknownKeyText = "";
+        //                    //if (_z0z1z2 == "F_F_MARL__UID") unknownKeyText = "";
+        //                    //if (_z0z1z2 == "F_F_MARL_RIN ") unknownKeyText = "";
+
+        //                    //if (_z0z1z2 == "I_I_SOUR_PAGE ") unknownKeyText = "";
+        //                    //if (_z0z1z2 == "I_I_SOUR_QUAY ") unknownKeyText = "";
+        //                    //if (_z0z1z2 == "I_I_SOUR_DATA ") unknownKeyText = "";
+
+
+        //                    //if (unknownKeyText != "")
+        //                    //    Console.WriteLine(/*z_newline + */"Unknown z_key at _z0z1z2 = " + _z0z1z2 + " at line: " + _count.ToString() + ": z_value = " + _valueAdd);
+
+        //                    _line_used = false; break;
+
+        //                }
+        //            }
+        //            break;
+        //    }
+
+        //    if (z_0 != "I_" && z_0 != "F_")
+        //    {
+        //        switch (z_2)
+        //        {
+        //            case "H_FILE": z_gedheadText += _valueAdd; break;
+        //            default:
+        //                break;
+        //        }
+        //    }
+
+
+        //    if (_line_used == false)
+        //    {
+        //        z_info_new = new("INFO;", ";", "unused line ; " + _count + " > "+ _line_string);
+        //        z_info_list.Add(z_info_new);
+        //    }
+
+
+        //    _comment_inside_code = "End of:  if (_first == 2";
+        //}
+        //_comment_inside_code = "End of > foreach _all_lines";
+
+
+        //_comment_inside_code = "boolCheckUnklar == false";
+        //if (z_slow < 2 && boolCheckUnklar == false)
+        //{
+        //    _info_0_text = z_slow + "; NO_0007;for unklar / Klärung / lebt";
+        //    Xwrite("Step_9905", true, _info_0_text);
+
+        //    boolCheckUnklar = true;
+        //}
+
+        //if (z_slow < x && z_lastPeListIndex_DONE > 0)  // to avoid crashes
+        //{
+        //    //z_lastPeListIndex_DONE = z_lastPeListIndex;
+
+        //    string valueCheck = _pe1_list[z_lastPeListIndex_DONE].I_NAME_NSFX;
+        //    if (valueCheck.Contains("unklar") || valueCheck.Contains("Klärung") || valueCheck.Contains("lebt?"))
+        //    {
+        //        if (DontCheck_NSFX(_pe1_list[z_lastPeListIndex].AA_I_INDI) == false)
+        //        {
+        //            errortext = z_blank //+ "____________________"
+        //            + z_blank + _pe1_list[z_lastPeListIndex_DONE].I_NAME_NSFX
+        //            + " verh. " + _pe1_list[z_lastPeListIndex_DONE].I_NAME_MARNM
+        //            + z_blank + _pe1_list[z_lastPeListIndex_DONE].I_NAME_SURN
+        //            + z_blank + _pe1_list[z_lastPeListIndex_DONE].I_NAME_GIVN
+        //            + " born: " + _pe1_list[z_lastPeListIndex_DONE].I_BIRT_DATE
+        //            + " born_at: " + _pe1_list[z_lastPeListIndex_DONE].I_BIRT_PLAC
+        //            + " marr: " + _pe1_list[z_lastPeListIndex_DONE].I_MARR_DATE
+        //            + " died: " + _pe1_list[z_lastPeListIndex_DONE].I_DEAT_DATE
+        //            + " " + _pe1_list[z_lastPeListIndex_DONE].AA_I_INDI
+        //            ;
+        //            errortext = errortext.Replace("=", " = ");
+
+        //            if (z_lastPeListIndex > z_lastPeListIndex_DONE)
+        //            {
+        //                Console.WriteLine(errortext);
+        //                AddError(_count.ToString(), "Suffix contains 'unklar'", errortext);
+        //                z_lastPeListIndex_DONE += 1;
+        //            }
+        //            //z_lastPeListIndex_DONE = z_lastPeListIndex;
+        //        }
+        //    }
+        //    valueCheck = "";
+        //}
+
+        // STOPP
+        //if (_CountLines > 30000)
+        //    Console.WriteLine("Stopp at 30.000");
+
+
+        //z_lastPeListIndex_DONE = z_lastPeListIndex;
+
+        // end of : if (_first_int == 2")
+        //#endregion _first = 2
+
+        //z_lastPeListIndex_DONE = z_lastPeListIndex;
+
+
+
+
+        //z_lastPeListIndex_DONE = z_lastPeListIndex;
+
+
+        //if (_pe_list_index >= 0 && _pe1_list[_pe_list_index].I_FAMS != "")
+        //    SplitColl(_pe1_list[_pe_list_index].I_FAMS, ';');
+
+
+
+
+        //_update_string = "";  // here !!
+
+        _pe1_list.AddRange(_pe2_list);
+        _pe1_list.AddRange(_pe3_list);
+        _pe1_list.AddRange(_pe4_list);
+        _pe1_list.AddRange(_pe5_list);
+        _pe1_list.AddRange(_pe6_list);
+        _pe1_list.AddRange(_pe7_list);
+        _pe1_list.AddRange(_pe8_list);
+        _pe1_list.AddRange(_pe9_list);
+
+        Report_Statistics();
+
+        PopulateSourceList();
+
+        PopulateAlbumList();
+
+        PopulateFamList();
+
+
+
+        PopulatePe1List();
+        //if (_pe1_list[i].I_BURI != "")
+        //{
+        //    //_date = "," + _pe1_list[i].I_BURI_DATE;
+        //    _dateString = N60_GetDateString(_pe1_list[i].I_BURI_DATE);
+        //    if (_dateString == " ")
+        //    {
+        //        _dateString = _deathdateString;
+        //        _deathdateString = "";
+        //    }
+
+        //    _place = _pe1_list[i].I_BURI_PLAC;
+        //    _cb = "";
+        //    _dateColl = _dateString.Split(';');
+        //    _date_val = _dateColl[0];
+
+        //    if (_dateColl.Length > 3)
+        //    {
+        //        if (_dateColl[3] != "not 4,8,10,11") _day = _dateColl[3]; else _day = "";
+        //        _month = _dateColl[4];
+        //        _year = _dateColl[5];
+        //    }
+        //    else
+        //    {
+        //        Debugger.Break();
+        //    }
+
+        //    _kind = "9-buried";
+        //    z_event_new = new(0, _day, _month, _year, _date_val
+        //        , _date = "," + _pe1_list[i].I_BURI_DATE, _kind, _dio, _cb, _place
+        //        , _pe1_list[i].AA_I_INDEX, _pe1_list[i].I_SEX, _pers_line_text)
+        //        ;
+        //    z_birth_list.Add(z_event_new);
+        //}
+        //}
+        //z_ht = " # ";
+        _comment_inside_code = "End of MAIN()";
+    }
+
+    private static void N00_see_Main()
+    {
+        z_nextGoalOfLines = _count;
+    }
+    private static void N02_Print_Additional_checks()
+    {
+        _comment_inside_code = z_newline + z_newline
+        + "Additional checks:" + z_newline
+        + "- last done: 17_04_2026 = check Orte-Korrekturen > FTB" + z_newline
+        + "- last done: 17_04_2026 = clean Erdbestattung (BG-Sources)" + z_newline
+
+        + "- last done: 17_04_2026 = check typo: *Josepf* > Access" + z_newline
+        + "- last done: 17_04_2026 = check Walbruga > FTB" + z_newline
+        + "- last done: 17_04_2026 = check Wlabruga > FTB" + z_newline
+        + "- last done: 17_04_2026 = Gerog vs Georg" + z_newline
+        + "- last done: 19 DEC 2022  = xx times >>> FTB: check Anony* = death (0 or 1 day)" + z_newline
+
+        + "- last done: 24 DEC 2024 = check *Reid* vs Ried > FTB" + z_newline
+        + "- last done: 24 APR 2024 = if Note = M or PF > Matrikel.txt (only Note, not DEAT_CAUS)" + z_newline
+
+        + "- last done: 17_04_2026 = XLS: check Gütler) > " + z_newline
+        + "- last done: 17_04_2026 = XLS: check Kind) > XLS" + z_newline
+        + "- last done: 24 DEC 2024 = XLS: check (AN > XLS" + z_newline
+        + "- last done: 19 APR 2022  = xx times >>> INDI: not (Kind) and AGE = 2" + z_newline
+        + "- last done: 24 APR 2024 = <p>&nbsp;" + z_newline
+        + z_newline
+        + "- last done: 19 APR 2022 = xx times >>> INDI: DEAT-CAUS not empty or M6097 + D_DATE > D_NOTE not empty" + z_newline
+        + "- last done: 19 APR 2022 = 35 times >>> INDI: DEAT-CAUS not DE-8 or other place" + z_newline
+        + "- last done: 19 APR 2022 = xx times >>> INDI: (Pflegling) and DEAT-CAUS not empty" + z_newline
+        + "- last done: 19 APR 2022 = xx times >>> INDI: not (Kind) and AGE = 2" + z_newline
+        + "- last done: 19 APR 2022 = xx times >>> INDI: check NOTES for being unique" + z_newline
+
+        + "- last done: 19 APR 2022 = xx times >>> INDI: check NOTES for being unique" + z_newline
+        + "- OPEN = xx times >>> CODE or FTB-EXPORT_LEBENDE: born < 1918 and still alive coded" + z_newline
+        ;
+
+        _comment_inside_code = "SKIPPED listing > Additional checks";
+        Xwrite("Step_8863", true, _comment_inside_code);
+    }
+
+    private static void N07_INDI_Lines(List<string> _all_lines)
+    {
         _count = 0;
-        z_nextGoalOfLines = 100000;
+        z_nextGoalOfLines = 10000;
+
+        string keyPrevious_indi = "";
+        int _pe_list_index = -1;
+        string unknownKeyText;
+        string z_0 = "";
+        string z_1 = "";
+        string z_2 = "";
+        string _entry_text = "";
+        bool bool_pe2_list_has_space = true;
+        bool bool_pe3_list_has_space = true;
+        bool bool_pe4_list_has_space = true;
+        bool bool_pe5_list_has_space = true;
+        bool bool_pe6_list_has_space = true;
+        bool bool_pe7_list_has_space = true;
+        bool bool_pe8_list_has_space = true;
+        bool bool_pe9_list_has_space = true;
 
 
         foreach (var _line in _all_lines)
@@ -2268,7 +3834,7 @@ class A00_Code
 
             //_info_0_text = _count + " > Orig.Line= > " + _line;
             //Console.WriteLine(_info_0_text);
-            string _valueAdd = "";
+            string _valueAdd = "" + _entry_text;
             bool _line_used = true;
 
             Replace_stuff(_line, out string _line_string);
@@ -2296,10 +3862,10 @@ class A00_Code
 
             //_comment_inside_code = "if (_count > z_nextGoalOfLines)";
 
-            _first = _line_string[..1];//.ToString();
+            string _first = _line_string[..1];//.ToString();
             _ = int.TryParse(_first, out int _first_int);
 
-            secondblankOrEnd = N72_Get_2nd_blank(1, _line_string);
+            int secondblankOrEnd = N72_Get_2nd_blank(1, _line_string);
 
             _comment_inside_code = "firstchar=0";
 
@@ -2311,14 +3877,94 @@ class A00_Code
                     if (_count > z_nextGoalOfLines)
                     {
                         _info_0_text = "Step_1400 > " + DateTime.Now
-                            + " > " + z_nextGoalOfLines / 1000 + " TSD > Line= > " + _line_string + "           > Orig.= > " + _line;
+                            + " > " + z_nextGoalOfLines / 1000 + " TSD > Line= > " + _line_string 
+                            + "           > Orig.= > " + _line + " > pe1_list.Count= " + _pe1_list.Count;
                         Xwrite("INFO", true, _info_0_text);
                         //Trace.WriteLine(_info_0_text);
                         //z_info_new = new("INFO;", ";", _info_0_text);
                         //z_info_list.Add(z_info_new);
 
-                        z_nextGoalOfLines += 50000;
+                        z_nextGoalOfLines += 20000;
                     }
+
+                    
+
+                    if (_pe1_list.Count > 30000)
+                    {
+                        if (bool_pe2_list_has_space)
+                        {
+                        _pe2_list.AddRange(_pe1_list);
+                            _pe1_list.Clear();
+                            bool_pe2_list_has_space = false;
+                        }
+
+                        if (bool_pe3_list_has_space && _pe1_list.Count > 0)
+                        {
+                            _pe3_list.AddRange(_pe1_list);
+                            _pe1_list.Clear();
+                            bool_pe3_list_has_space = false;
+                        }
+
+                        if (bool_pe4_list_has_space && _pe1_list.Count > 0)
+                        {
+                            _pe4_list.AddRange(_pe1_list);
+                            _pe1_list.Clear();
+                            bool_pe4_list_has_space = false;
+                        }
+
+                        if (bool_pe5_list_has_space && _pe1_list.Count > 0)
+                        {
+                            _pe5_list.AddRange(_pe1_list);
+                            _pe1_list.Clear();
+                            bool_pe5_list_has_space = false;
+                        }
+
+                        if (bool_pe6_list_has_space && _pe1_list.Count > 0)
+                        {
+                            _pe6_list.AddRange(_pe1_list);
+                            _pe1_list.Clear();
+                            bool_pe6_list_has_space = false;
+                        }
+
+                        if (bool_pe7_list_has_space && _pe1_list.Count > 0)
+                        {
+                            _pe7_list.AddRange(_pe1_list);
+                            _pe1_list.Clear();
+                            bool_pe7_list_has_space = false;
+                        }
+
+                        if (bool_pe8_list_has_space && _pe1_list.Count > 0)
+                        {
+                            _pe8_list.AddRange(_pe1_list);
+                            _pe1_list.Clear();
+                            bool_pe8_list_has_space = false;
+                        }
+
+                        if (bool_pe9_list_has_space && _pe1_list.Count > 0)
+                        {
+                            _pe9_list.AddRange(_pe1_list);
+                            _pe1_list.Clear();
+                            bool_pe9_list_has_space = false;
+                        }
+
+
+                    }
+
+                    //switch (_pe1_list.Count)
+                    //{
+                    //    case > 200:
+                    //        _int_peList = 3;
+                    //        Console.WriteLine("_int_peList = 3;");
+                    //        break;
+                    //    case > 100:
+                    //        _int_peList = 2;
+                    //        Console.WriteLine("_int_peList = 2;");
+                    //        break;
+                    //    case > 0:
+                    //        _int_peList = 1;
+                    //        Console.WriteLine("_int_peList = 1;");
+                    //        break;
+                    //}
 
 
                     //_first = _line_string.[..1].ToString();
@@ -2449,14 +4095,14 @@ class A00_Code
 
 
 
-                    if (_line_string.Substring(2, 4).ToString() == "HEAD")
-                    {
-                        z_0 = "H_";
-                        //_sw0_int = 0;
-                        z_key = "HEAD";
-                        keyPrevious_pe = z_key;
-                        //continue;
-                    }
+                    //if (_line_string.Substring(2, 4).ToString() == "HEAD")
+                    //{
+                    //    z_0 = "H_";
+                    //    //_sw0_int = 0;
+                    //    z_key = "HEAD";
+                    //    keyPrevious_pe = z_key;
+                    //    //continue;
+                    //}
 
                     _comment_inside_code = "ab hier U_";
                     //if (_line_string.Substring(2, 2).ToString() == @"@U")
@@ -2514,6 +4160,15 @@ class A00_Code
                             );
                         //if (_count < 11300000)
                         //{
+                        //switch (_int_peList)
+                        //{
+                        //    case 1: _pe1_list.Add(peNew); break;
+                        //    case 2: _pe2_list.Add(peNew); break;
+                        //    case 3: _pe3_list.Add(peNew); break;
+                        //    case 4: _pe4_list.Add(peNew); break;
+                        //default:
+                        //        break;
+                        //}
                         _pe1_list.Add(peNew);
                         //}
                         //else
@@ -2530,33 +4185,33 @@ class A00_Code
                     }
 
                     // FAM
-                    _comment_inside_code = "ab hier families";
-                    //int _fam_index_count = 0;
-                    if (_line_string.EndsWith("FAM"))
-                    {
-                        z_0 = "F_";
-                        //_sw0_int = 2;
-                        //z_key = _line_string.Substring(3, secondblankOrEnd - 3).ToString().Trim();
-                        z_key = _line_string[3..secondblankOrEnd].ToString().Trim();
-                        z_key = N61_CleanID(z_key);
-                        keyPrevious_fam = z_key;
+                    //_comment_inside_code = "ab hier families";
+                    ////int _fam_index_count = 0;
+                    //if (_line_string.EndsWith("FAM"))
+                    //{
+                    //    z_0 = "F_";
+                    //    //_sw0_int = 2;
+                    //    //z_key = _line_string.Substring(3, secondblankOrEnd - 3).ToString().Trim();
+                    //    z_key = _line_string[3..secondblankOrEnd].ToString().Trim();
+                    //    z_key = N61_CleanID(z_key);
+                    //    keyPrevious_fam = z_key;
 
-                        Fam famNew = new(keyPrevious_fam
-                            , z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank//  // 11//
-                            , z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank//  // 21
-                            , z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank//,
-                            );
+                    //    Fam famNew = new(keyPrevious_fam
+                    //        , z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank//  // 11//
+                    //        , z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank//  // 21
+                    //        , z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank//,
+                    //        );
 
 
-                        // record index for fast lookup
-                        _fam_list.Add(famNew);
-                        _fam_index[keyPrevious_fam] = _fam_list.Count - 1;
-                        //Console.WriteLine("adding FAM = {0}", keyPrevious);
-                        //continue;
-                    }
+                    //    // record index for fast lookup
+                    //    _fam_list.Add(famNew);
+                    //    _fam_index[keyPrevious_fam] = _fam_list.Count - 1;
+                    //    //Console.WriteLine("adding FAM = {0}", keyPrevious);
+                    //    //continue;
+                    //}
 
                     _pe_list_index = _pe1_index.GetValueOrDefault(keyPrevious_indi, -1);
-                    _fam_list_index = _fam_index.GetValueOrDefault(keyPrevious_fam, -1);
+                    //_fam_list_index = _fam_index.GetValueOrDefault(keyPrevious_fam, -1);
                     int _note_list_index = 0;
                     //int _source_list_index = z_source_list.FindIndex(item => item.AA_S_INDEX == keyPrevious_sour);
                     int _source_list_index = 0;
@@ -2666,6 +4321,10 @@ class A00_Code
                     //_pe1_list.Add(peNew);
 
                     break;
+
+
+
+
 
                 case 1:
                     _comment_inside_code = "first = 1";
@@ -2833,7 +4492,7 @@ class A00_Code
 
                             case "I_OBJE": /*_pe1_list[_pe_list_index].I_OBJE = _valueAdd;*/ break;
 
-                            case "I_MARR": _pe1_list[_fam_list_index].I_MARR = _valueAdd; break;
+                            case "I_MARR": _pe1_list[_pe_list_index].I_MARR = _valueAdd; break;
                             //case "I_DIV ": _pe1_list[_fam_list_index].I_DIV = _valueAdd; break;
                             //case "I_NATI": _pe1_list[_pe_list_index].I_NATI = _valueAdd; break;
 
@@ -2842,31 +4501,31 @@ class A00_Code
                     }
 
 
-                    _comment_inside_code = "Families";
-                    if (z_0 == "F_")
-                    {
-                        switch (z_1)
-                        {
-                            // FAM
-                            case "F_HUSB": _fam_list[_fam_list_index].F_HUSB = _valueAdd; break;
-                            //case "F_HUSB": _fam_list[_fam_list_index].F_HUSB = N61_CleanID(_valueAdd); break;
-                            case "F_WIFE": _fam_list[_fam_list_index].F_WIFE = _valueAdd; break;
-                            //case "F_WIFE": _fam_list[_fam_list_index].F_WIFE = N61_CleanID(_valueAdd); break;
-                            case "F_RIN": /*_fam_list[_fam_list_index].F_RIN = _valueAdd;*/ break;
-                            case "F__UID": /*_fam_list[_fam_list_index].F__UID = _valueAdd;*/ break;
-                            case "F_CHIL": _fam_list[_fam_list_index].F_CHIL += _valueAdd + " # "; break;
-                            //case "F_CHIL": _fam_list[_fam_list_index].F_CHIL += N61_CleanID(_valueAdd) + " # "; break;
-                            //case "F__UPD": _fam_list[_fam_list_index].F__UPD = _valueAdd; break;
-                            case "F_MARR": /*_fam_list[_fam_list_index].F_MARR = _valueAdd;*/ break;
-                            case "F_MARL": _fam_list[_fam_list_index].F_MARL = _valueAdd; break;  // Hochzeit Standesamt
-                            case "F_DIV": _fam_list[_fam_list_index].F_DIV = _valueAdd; break;  // Divorce
-                            case "F_ENGA": _fam_list[_fam_list_index].F_ENGA = _valueAdd; break; // Verlobung
-                                                                                                 //case "F_ANUL": _fam_list[_fam_list_index].F_ANUL = _valueAdd; break;
+                    //_comment_inside_code = "Families";
+                    //if (z_0 == "F_")
+                    //{
+                    //    switch (z_1)
+                    //    {
+                    //        // FAM
+                    //        case "F_HUSB": _fam_list[_fam_list_index].F_HUSB = _valueAdd; break;
+                    //        //case "F_HUSB": _fam_list[_fam_list_index].F_HUSB = N61_CleanID(_valueAdd); break;
+                    //        case "F_WIFE": _fam_list[_fam_list_index].F_WIFE = _valueAdd; break;
+                    //        //case "F_WIFE": _fam_list[_fam_list_index].F_WIFE = N61_CleanID(_valueAdd); break;
+                    //        case "F_RIN": /*_fam_list[_fam_list_index].F_RIN = _valueAdd;*/ break;
+                    //        case "F__UID": /*_fam_list[_fam_list_index].F__UID = _valueAdd;*/ break;
+                    //        case "F_CHIL": _fam_list[_fam_list_index].F_CHIL += _valueAdd + " # "; break;
+                    //        //case "F_CHIL": _fam_list[_fam_list_index].F_CHIL += N61_CleanID(_valueAdd) + " # "; break;
+                    //        //case "F__UPD": _fam_list[_fam_list_index].F__UPD = _valueAdd; break;
+                    //        case "F_MARR": /*_fam_list[_fam_list_index].F_MARR = _valueAdd;*/ break;
+                    //        case "F_MARL": _fam_list[_fam_list_index].F_MARL = _valueAdd; break;  // Hochzeit Standesamt
+                    //        case "F_DIV": _fam_list[_fam_list_index].F_DIV = _valueAdd; break;  // Divorce
+                    //        case "F_ENGA": _fam_list[_fam_list_index].F_ENGA = _valueAdd; break; // Verlobung
+                    //                                                                             //case "F_ANUL": _fam_list[_fam_list_index].F_ANUL = _valueAdd; break;
 
 
-                            default: _line_used = false; break;
-                        }
-                    }
+                    //        default: _line_used = false; break;
+                    //    }
+                    //}
                     _comment_inside_code = "End of:  if (_first == 1";
                     // end of : if (_first_int == 1")
                     //#endregion _first = 1
@@ -2903,8 +4562,9 @@ class A00_Code
 
                     _valueAdd = "";
                     //Console.WriteLine("_line_string.Length = {1}, line = {0}", _line_string, _line_string.Length);
-                    if (_line_string.Length > 6)
+                    if (_line_string.Length > secondblankOrEnd + 1)
                     {
+                        secondblankOrEnd += 1;
                         //_valueAdd =_line_string.Substring(secondblankOrEnd + 1, _line_string.Length - secondblankOrEnd - 1) + z_separator;
                         _valueAdd = _line_string[secondblankOrEnd..];
                         //z_0 + z_1 + z_separator + "-" + z_2 + z_separator + // without
@@ -2986,7 +4646,17 @@ class A00_Code
 
 
                             case "I_I_BIRT_DATE":
-                                _pe1_list[_pe_list_index].I_BIRT_DATE = _valueAdd.Trim();
+                                if (_valueAdd.Length == 9)
+                                {
+                                    _pe1_list[_pe_list_index].I_BIRT_DATE = ",0" + _valueAdd;
+                                }
+                                else
+                                {
+                                    _pe1_list[_pe_list_index].I_BIRT_DATE = "," + _valueAdd;
+                                }
+                                //_pe1_list[_pe_list_index].I_DEAT_DATE = _valueAdd; 
+                                //break;
+                                //_pe1_list[_pe_list_index].I_BIRT_DATE = _valueAdd;
                                 break;
                             case "I_I_NAME_GIVN":
                                 _pe1_list[_pe_list_index].I_NAME_GIVN = _valueAdd;
@@ -3034,16 +4704,26 @@ class A00_Code
                             //case "I_I_BIRT_PLAC": _pe1_list[_pe_list_index].I_BIRT_PLAC = N62_CleanPlace(_valueAdd, out _valueAdd); break;
                             //case "I_I_BIRT_RIN ": /*_pe1_list[_pe_list_index].I_BIRT_RIN = _valueAdd;*/ break;
                             //case "I_I_BIRT__UID": /*_pe1_list[_pe_list_index].I_BIRT_UID = _valueAdd;*/ break;
-                            case "I_I_BIRT_NOTE": _valueAdd = _valueAdd.Replace(";", "#"); _pe1_list[_pe_list_index].I_BIRT_NOTE = _valueAdd; break;
+                            case "I_I_BIRT_NOTE": /*_valueAdd = _valueAdd.Replace(";", "#");*/ _pe1_list[_pe_list_index].I_BIRT_NOTE = _valueAdd; break;
 
-                            case "I_I_DEAT_DATE": _pe1_list[_pe_list_index].I_DEAT_DATE = _valueAdd.Trim(); break;
-                            case "I_I_DEAT_PLAC": _pe1_list[_pe_list_index].I_DEAT_PLAC = _valueAdd.Trim(); break;
+                            case "I_I_DEAT_DATE":
+                                if (_valueAdd.Length == 9)
+                                {
+                                    _pe1_list[_pe_list_index].I_DEAT_DATE = ",0" + _valueAdd;
+                                }
+                                else
+                                {
+                                    _pe1_list[_pe_list_index].I_DEAT_DATE = "," + _valueAdd;
+                                }
+                                //_pe1_list[_pe_list_index].I_DEAT_DATE = _valueAdd; 
+                                break;
+                            case "I_I_DEAT_PLAC": _pe1_list[_pe_list_index].I_DEAT_PLAC = _valueAdd; break;
                             //case "I_I_DEAT_PLAC": _pe1_list[_pe_list_index].I_DEAT_PLAC = N62_CleanPlace(_valueAdd, out _valueAdd); break;
                             case "I_I_DEAT_CAUS": _pe1_list[_pe_list_index].I_DEAT_CAUS = _valueAdd; break;
                             //case "I_I_DEAT_AGE ": /*_pe1_list[_pe_list_index].I_DEAT_AGE = _valueAdd;*/ break;
                             //case "I_I_DEAT__UID": /*_pe1_list[_pe_list_index].I_DEAT_UID = _valueAdd;*/ break;
                             //case "I_I_DEAT_RIN ": /*_pe1_list[_pe_list_index].I_DEAT_RIN = _valueAdd;*/ break;
-                            case "I_I_DEAT_NOTE": _valueAdd = _valueAdd.Replace(";", "#"); _pe1_list[_pe_list_index].I_DEAT_NOTE = _valueAdd; break;
+                            case "I_I_DEAT_NOTE": /*_valueAdd = _valueAdd.Replace(";", "#");*/ _pe1_list[_pe_list_index].I_DEAT_NOTE = _valueAdd; break;
                             //case "I_I_BURI_DATE": /*_pe1_list[_pe_list_index].I_BURI_DATE = _valueAdd.Trim();*/ break;
                             case "I_I_BURI_PLAC": _pe1_list[_pe_list_index].I_BURI_PLAC = _valueAdd; break;
                             //case "I_I_BURI_PLAC": _pe1_list[_pe_list_index].I_BURI_PLAC = N62_CleanPlace(_valueAdd, out _valueAdd); break;
@@ -3212,13 +4892,1045 @@ class A00_Code
                         }
                     }
 
+                    //if (z_0 == "F_")
+                    //{
+
+                    //    switch (_z0z1z2)
+                    //    {
+                    //        // FAM
+                    //        case "F_F_MARR_DATE":
+                    //            if (_valueAdd.Length == 9)
+                    //            {
+                    //                _fam_list[_fam_list_index].F_MARR_DATE = ",0" + _valueAdd;
+                    //            }
+                    //            else
+                    //            {
+                    //                _fam_list[_fam_list_index].F_MARR_DATE = "," + _valueAdd;
+                    //            }
+                    //            //_pe1_list[_pe_list_index].I_DEAT_DATE = _valueAdd; 
+                    //            //break;
+                    //            //_fam_list[_fam_list_index].F_MARR_DATE = _valueAdd; 
+                    //            break;
+                    //        case "F_F_MARR_PLAC": _fam_list[_fam_list_index].F_MARR_PLAC = _valueAdd; break;
+                    //        //case "F_F_MARR_PLAC": _fam_list[_fam_list_index].F_MARR_PLAC = N62_CleanPlace(_valueAdd, out _valueAdd); break;
+                    //        case "F_F_MARR_NOTE": _valueAdd = _valueAdd.Replace(",", "#"); _fam_list[_fam_list_index].F_MARR_NOTE = _valueAdd; break;
+                    //        //case "F_F_MARR__UID": /*_fam_list[_fam_list_index].F_MARR__UID = _valueAdd;*/ break;
+                    //        //case "F_F_MARR_RIN ": /*_fam_list[_fam_list_index].F_MARR_RIN = _valueAdd;*/ break;
+                    //        case "F_F_EVEN_TYPE": _fam_list[_fam_list_index].F_EVEN_TYPE = _valueAdd; break;
+                    //        case "F_F_EVEN_DATE": _fam_list[_fam_list_index].F_EVEN_DATE = _valueAdd; break;
+                    //        case "F_F_EVEN_PLAC": _fam_list[_fam_list_index].F_EVEN_PLAC = _valueAdd; break;
+                    //        //case "F_F_EVEN_PLAC": _fam_list[_fam_list_index].F_EVEN_PLAC = N62_CleanPlace(_valueAdd, out _valueAdd); break;
+                    //        //case "F_F_EVEN__UID": /*_fam_list[_fam_list_index].F_EVEN__UID = _valueAdd;*/ break;
+                    //        //case "F_F_EVEN_RIN ": /*_fam_list[_fam_list_index].F_EVEN_RIN = _valueAdd;*/ break;
+                    //        case "F_F_EVEN_NOTE": _fam_list[_fam_list_index].F_EVEN_NOTE = _valueAdd; break;
+                    //        // MARL
+                    //        case "F_F_MARL_DATE": _fam_list[_fam_list_index].F_MARL_DATE = _valueAdd; break;
+                    //        case "F_F_MARL_PLAC": _fam_list[_fam_list_index].F_MARL_PLAC = _valueAdd; break;
+                    //        //case "F_F_MARL_PLAC": _fam_list[_fam_list_index].F_MARL_PLAC = N62_CleanPlace(_valueAdd, out _valueAdd); break;
+                    //        case "F_F_MARL_NOTE": _fam_list[_fam_list_index].F_MARL_NOTE = _valueAdd; break;
+                    //        // DIV
+                    //        case "F_F_DIV_DATE": _fam_list[_fam_list_index].F_DIV_DATE = _valueAdd; break;
+                    //        case "F_F_DIV_PLAC": _fam_list[_fam_list_index].F_DIV_PLAC = _valueAdd; break;
+                    //        //case "F_F_DIV_PLAC": _fam_list[_fam_list_index].F_DIV_PLAC = N62_CleanPlace(_valueAdd, out _valueAdd); break;
+                    //        case "F_F_DIV_NOTE": _fam_list[_fam_list_index].F_DIV_NOTE = _valueAdd; break;
+                    //        // ENGA
+                    //        case "F_F_ENGA_DATE": _fam_list[_fam_list_index].F_ENGA_DATE = _valueAdd; break;
+                    //        case "F_F_ENGA_PLAC": _fam_list[_fam_list_index].F_ENGA_PLAC = _valueAdd; break;
+                    //        case "F_F_ENGA_NOTE": _fam_list[_fam_list_index].F_ENGA_NOTE = _valueAdd; break;
+                    //        // ANUL
+                    //        case "F_F_ANUL_DATE": _fam_list[_fam_list_index].F_ANUL_DATE = _valueAdd; break;
+                    //        case "F_F_ANUL_PLAC": _fam_list[_fam_list_index].F_ANUL_PLAC = _valueAdd; break;
+                    //        case "F_F_ANUL_NOTE": _fam_list[_fam_list_index].F_ANUL_NOTE = _valueAdd; break;
+
+                    //        ////    // SOUR
+
+                    //        ////case "S_S_SOUR_CONC": z_source_list[_source_list_index].S_SOUR_CONC = _valueAdd; break;
+                    //        ////case "S_S_TEXT_CONC": z_source_list[_source_list_index].S_TEXT_CONC = _valueAdd; break;
+
+
+                    //        //// HEADER
+                    //        ////case "H_H_GEDC_VERS": z_gedheadText += _valueAdd; break;
+                    //        ////case "H_H_GEDC_FORM": z_gedheadText += _valueAdd; break;
+                    //        ////case "H_H_SOUR_NAME": z_gedheadText += _valueAdd; break;
+                    //        ////case "H_H_SOUR_VERS": z_gedheadText += _valueAdd; break;
+                    //        ////case "H_H_SOUR__RTL": z_gedheadText += _valueAdd; break;
+                    //        ////case "H_H_SOUR_CORP": z_gedheadText += _valueAdd; break;
+
+                    //        ////case "H_H_DEST": z_gedheadText += _valueAdd; break;
+                    //        ////case "H_H__PRO": z_gedheadText += _valueAdd; break;
+
+
+
+                    //        //// ALBUM
+                    //        ////case "H_H_GEDC_VERS": z_gedheadText += _valueAdd; break;
+                    //        ////case "H_H_GEDC_FORM": z_gedheadText += _valueAdd; break;
+                    //        ////case "H_H_SOUR_NAME": z_gedheadText += _valueAdd; break;
+                    //        ////case "H_H_SOUR_VERS": z_gedheadText += _valueAdd; break;
+                    //        ////case "H_H_SOUR__RTL": z_gedheadText += _valueAdd; break;
+                    //        ////case "H_H_SOUR_CORP": z_gedheadText += _valueAdd; break;
+
+
+
+
+                    //        //case "I_I_BIRT_DATE":
+                    //        //    _pe1_list[_pe_list_index].I_BIRT_DATE = _valueAdd.Trim();
+                    //        //    break;
+                    //        //case "I_I_NAME_GIVN":
+                    //        //    _pe1_list[_pe_list_index].I_NAME_GIVN = _valueAdd;
+                    //        //    _pe1_list[_pe_list_index].I_NAME_GIVN = _valueAdd;
+
+                    //        //    if (boolCheckGIVEN == false)
+                    //        //    {
+                    //        //        boolCheckGIVEN = true;
+                    //        //        //if (z_slow < 2)
+                    //        //        //{
+                    //        //        //    if (_valueAdd.Contains("doppelt") || _valueAdd.Contains("ein zwei") || _valueAdd.Contains("die selbe"))
+                    //        //        //    {
+                    //        //        //        if (DontCheck_Given(_pe1_list[_pe_list_index].AA_I_INDEX) == false)
+                    //        //        //        {
+                    //        //        //            errortext = separator + "GIVEN contains ..."
+                    //        //        //                + separator + _pe1_list[_pe_list_index].I_NAME_NSFX
+                    //        //        //                + "verh.;" + _pe1_list[_pe_list_index].I_NAME_MARNM
+                    //        //        //                + separator + _pe1_list[_pe_list_index].I_NAME_SURN
+                    //        //        //                + separator + _pe1_list[_pe_list_index].I_NAME_GIVN
+                    //        //        //                + separator + _pe1_list[_pe_list_index].AA_I_INDEX
+                    //        //        //                ;
+                    //        //        //            Console.WriteLine(errortext);
+                    //        //        //            AddError(_count.ToString(), "CHECKING", errortext);
+                    //        //        //        }
+                    //        //        //    }
+                    //        //        //}
+                    //        //        //else
+                    //        //        //{
+                    //        //        //    _info_0_text = "    z_slow is ;" + z_slow + "; NO_0008;CheckGiven: no output for each single entry";
+                    //        //        //    Console.WriteLine(_info_0_text);
+                    //        //        //    z_info_new = new("INFO;", ";", _info_0_text);
+
+                    //        //        //    //boolCheckGIVEN = true;
+                    //        //        //}
+                    //        //    }
+                    //        //    break;
+                    //        //case "I_I_NAME_NICK": _pe1_list[_pe_list_index].I_NAME_NICK = _valueAdd; break;
+                    //        //case "I_I_NAME__MAR": _pe1_list[_pe_list_index].I_NAME_MARNM = _valueAdd; break;
+                    //        //case "I_I_NAME_SURN": _pe1_list[_pe_list_index].I_NAME_SURN = _valueAdd; break;
+
+                    //        //case "I_I_NAME_NPFX": _pe1_list[_pe_list_index].I_NAME_NPFX = _valueAdd; break;
+                    //        //case "I_I_NAME__FOR": _pe1_list[_pe_list_index].I_NAME__FOR = _valueAdd; break;
+
+                    //        //case "I_I_BIRT_PLAC": _pe1_list[_pe_list_index].I_BIRT_PLAC = _valueAdd; break;
+                    //        ////case "I_I_BIRT_RIN ": /*_pe1_list[_pe_list_index].I_BIRT_RIN = _valueAdd;*/ break;
+                    //        ////case "I_I_BIRT__UID": /*_pe1_list[_pe_list_index].I_BIRT_UID = _valueAdd;*/ break;
+                    //        //case "I_I_BIRT_NOTE": _valueAdd = _valueAdd.Replace(";", "#"); _pe1_list[_pe_list_index].I_BIRT_NOTE = _valueAdd; break;
+
+                    //        //case "I_I_DEAT_DATE": _pe1_list[_pe_list_index].I_DEAT_DATE = _valueAdd.Trim(); break;
+                    //        //case "I_I_DEAT_PLAC": _pe1_list[_pe_list_index].I_DEAT_PLAC = _valueAdd; break;
+                    //        //case "I_I_DEAT_CAUS": _pe1_list[_pe_list_index].I_DEAT_CAUS = _valueAdd; break;
+                    //        ////case "I_I_DEAT_AGE ": /*_pe1_list[_pe_list_index].I_DEAT_AGE = _valueAdd;*/ break;
+                    //        ////case "I_I_DEAT__UID": /*_pe1_list[_pe_list_index].I_DEAT_UID = _valueAdd;*/ break;
+                    //        ////case "I_I_DEAT_RIN ": /*_pe1_list[_pe_list_index].I_DEAT_RIN = _valueAdd;*/ break;
+                    //        //case "I_I_DEAT_NOTE": _valueAdd = _valueAdd.Replace(";", "#"); _pe1_list[_pe_list_index].I_DEAT_NOTE = _valueAdd; break;
+                    //        ////case "I_I_BURI_DATE": /*_pe1_list[_pe_list_index].I_BURI_DATE = _valueAdd.Trim();*/ break;
+                    //        //case "I_I_BURI_PLAC": _pe1_list[_pe_list_index].I_BURI_PLAC = _valueAdd; break;
+                    //        ////case "I_I_BURI_RIN ": /*_pe1_list[_pe_list_index].I_BIRT_RIN = _valueAdd;*/ break;
+                    //        ////case "I_I_BURI__UID": /*_pe1_list[_pe_list_index].I_BIRT_UID = _valueAdd;*/ break;
+
+                    //        ////case "I_I_DIV_DATE": _pe1_list[_pe_list_index].I_DIV_DATE = _valueAdd; break;
+                    //        ////case "I_I_DIV_PLAC": _pe1_list[_pe_list_index].I_DIV_PLAC = _valueAdd; break;
+                    //        ////case "I_I_RESI_EMAI": /*_pe1_list[_pe_list_index].I_EMAIL = _valueAdd;*/ break;
+                    //        ////case "I_I_BAPM_PLAC": /*_pe1_list[_pe_list_index].I_BAPM_PLAC = _valueAdd;*/ break;
+                    //        ////case "I_I_BAPM_DATE": /*_pe1_list[_pe_list_index].I_BAPM_DATE = _valueAdd;*/ break;
+                    //        ////case "I_I_CONF_PLAC": /*_pe1_list[_pe_list_index].I_CONF_PLAC = _valueAdd;*/ break;
+                    //        ////case "I_I_CONF_DATE": /*_pe1_list[_pe_list_index].I_CONF_DATE = _valueAdd;*/ break;
+                    //        //case "I_I_OCCU_PLAC": _pe1_list[_pe_list_index].I_OCCU_PLAC = _valueAdd; break;
+                    //        //case "I_I_OCCU_DATE": _pe1_list[_pe_list_index].I_OCCU_DATE = _valueAdd; break;
+                    //        ////case "I_I_OCCU_AGE ": /*_pe1_list[_pe_list_index].I_OCCU_AGE = _valueAdd;*/ break;
+
+                    //        ////case "I_I_CENS_PLAC": /*_pe1_list[_pe_list_index].I_CENS_PLAC = _valueAdd;*/ break;
+                    //        ////case "I_I_CENS_DATE": /*_pe1_list[_pe_list_index].I_CENS_DATE = _valueAdd;*/ break;
+
+
+
+                    //        ////case "I_I_RESI_DATE": /*_pe1_list[_pe_list_index].I_RESI_DATE = _valueAdd;*/ break;
+                    //        ////case "I_I_RESI_AGE ": /*_pe1_list[_pe_list_index].I_RESI_AGE = _valueAdd;*/ break;
+
+                    //        ////case "I_I_ADDR_CONT": /*_pe1_list[_pe_list_index].I_RESI_ADDR = "Adress available";*/ break; // same like RESI ?
+                    //        ////case "I_I_RESI_ADDR": /*_pe1_list[_pe_list_index].I_RESI_ADDR = _valueAdd;*/ break;
+
+                    //        ////case "I_I_RESI_PLAC": _pe1_list[_pe_list_index].I_RESI_ADDR = " ### PLACE instead Address?:" + _valueAdd; break;
+                    //        ////case "I_I_RESI_PHON": _pe1_list[_pe_list_index].I_RESI_PHON = _valueAdd; break;
+                    //        ////case "I_I_RESI_FAX ": /*_pe1_list[_pe_list_index].I_RESI_FAX = _valueAdd;*/ break;
+                    //        ////case "I_I_RESI_NOTE": /*_pe1_list[_pe_list_index].I_RESI_NOTE = _valueAdd;*/ break;
+                    //        //case "I_I_FAMC_PEDI": _pe1_list[_pe_list_index].I_FAMC_PEDI = _valueAdd; break;
+
+                    //        //case "I_I_EVEN_DATE": _pe1_list[_pe_list_index].I_EVEN_DATE = _valueAdd; break;
+                    //        //case "I_I_EVEN_NOTE": _pe1_list[_pe_list_index].I_EVEN_NOTE = _valueAdd; break;
+                    //        ////case "I_I_EVEN_AGE ": /*_pe1_list[_pe_list_index].I_EVEN_AGE = _valueAdd;*/ break;
+
+                    //        ////case "I_I_EVEN__UID": /*_pe1_list[_pe_list_index].I_EVEN_UID = _valueAdd;*/ break;
+                    //        ////case "I_I_EVEN_RIN ": /*_pe1_list[_pe_list_index].I_EVEN_RIN = _valueAdd;*/ break;
+                    //        //case "I_I_EVEN_TYPE": _pe1_list[_pe_list_index].I_EVEN_TYPE = _valueAdd; break;
+                    //        //case "I_I_EVEN_PLAC": _pe1_list[_pe_list_index].I_EVEN_PLAC = _valueAdd; break;
+
+                    //        //case "I_I_EMIG_DATE": _pe1_list[_pe_list_index].I_EMIG = _valueAdd; break;
+                    //        //case "I_I_EMIG_PLAC": _pe1_list[_pe_list_index].I_EMIG_PLAC = _valueAdd; break;
+
+                    //        //case "I_I_IMMI_DATE": _pe1_list[_pe_list_index].I_IMMI = _valueAdd; break;
+                    //        //case "I_I_IMMI_PLAC": _pe1_list[_pe_list_index].I_IMMI_PLAC = _valueAdd; break;
+
+                    //        ////case "I_I_SOUR_DATA": /*_pe1_list[_pe_list_index].I_SOUR_DATA = _valueAdd;*/ break;
+                    //        ////case "I_I_SOUR_EVEN": /*_pe1_list[_pe_list_index].I_SOUR_EVEN = _valueAdd;*/ break;
+                    //        ////case "I_I_SOUR_PAGE": /*_pe1_list[_pe_list_index].I_SOUR_PAGE = _valueAdd;*/ break;
+                    //        ////case "I_I_SOUR_QUAL": /*_pe1_list[_pe_list_index].I_SOUR_QUAL = _valueAdd;*/ break;
+                    //        ////case "I_I_SOUR_QUAY": /*_pe1_list[_pe_list_index].I_SOUR_QUAY = _valueAdd;*/ break;
+                    //        ////case "I_I_SOUR_RIN ": /*_pe1_list[_pe_list_index].I_BIRT_RIN = _valueAdd;*/ break;
+                    //        ////case "I_I_SOUR__UID": /*_pe1_list[_pe_list_index].I_BIRT_UID = _valueAdd;*/ break;
+
+
+                    //        //case "I_I_OBJE_FORM": _pe1_list[_pe_list_index].I_OBJE_FILE = _valueAdd;/*_pe1_list[_pe_list_index].I_OBJE_FORM = _valueAdd;*/ break;
+                    //        ////case "I_I_OBJE_FILE": /*_pe1_list[_pe_list_index].I_OBJE_FILE = _valueAdd;*/ break;
+                    //        //case "I_I_OBJE_TITL": /*_pe1_list[_pe_list_index].I_OBJE_TITL = _valueAdd;*/ break;
+                    //        //case "I_I_OBJE_NOTE": /*_pe1_list[_pe_list_index].I_OBJE_NOTE = _valueAdd;*/ break;
+                    //        //case "I_I_OBJE__PRI": /*_pe1_list[_pe_list_index].I_OBJE__PRI = _valueAdd;*/ break;
+                    //        //case "I_I_OBJE__CUT": /*_pe1_list[_pe_list_index].I_OBJE__CUT = _valueAdd;*/ break;
+                    //        //case "I_I_OBJE__PAR": /*_pe1_list[_pe_list_index].I_OBJE__PAR = _valueAdd;*/ break;
+                    //        //case "I_I_OBJE__PER": /*_pe1_list[_pe_list_index].I_OBJE__PER = _valueAdd;*/ break;
+                    //        //case "I_I_OBJE__PHO": /*_pe1_list[_pe_list_index].I_OBJE__PHO = _valueAdd;*/ break;
+                    //        //case "I_I_OBJE__POS": /*_pe1_list[_pe_list_index].I_OBJE__POS = _valueAdd;*/ break;
+                    //        //case "I_I_OBJE__DAT": /*_pe1_list[_pe_list_index].I_OBJE__DAT = _valueAdd;*/ break;
+                    //        //case "I_I_OBJE__ALB": /*_pe1_list[_pe_list_index].I_OBJE__ALB = _valueAdd;*/ break;
+                    //        //case "I_I_OBJE__FIL": /*_pe1_list[_pe_list_index].I_OBJE__FIL = _valueAdd;*/ break;  // FILESIZE
+                    //        ////case "I_I_OBJE__PLA": /*_pe1_list[_pe_list_index].I_OBJE__PLA = _valueAdd;*/ break;  // PLACE
+
+
+                    //        //case "I_I_ORDN_DATE": /*_pe1_list[_pe_list_index].I_OBJE__FIL = _valueAdd;*/ break;
+
+
+                    //        //case "I_I_DATE_TIME": _pe1_list[_pe_list_index].I_DATE_TIME = _valueAdd; break;
+                    //        //case "I_I_CHAN_DATE": _pe1_list[_pe_list_index].I_DATE_TIME = "### DATE: CHAN instead D+T: " + _valueAdd; break;
+                    //        //case "I_I_NOTE_CONC": _pe1_list[_pe_list_index].I_NOTE_CONC = _valueAdd; break;
+                    //        ////case "I_I_FILE": z_gedheadText += _valueAdd; break;
+
+                    //        //case "I_I_NAME_NSFX":
+                    //        //    _pe1_list[_pe_list_index].I_NAME_NSFX = _valueAdd;
+
+                    //        //if (z_slow > 0)
+                    //        //{
+                    //        //    if (_valueAdd.Contains("unklar") || _valueAdd.Contains("Klärung") || _valueAdd.Contains("lebt?"))
+                    //        //    {
+                    //        //        if (DontCheck_NSFX(_pe1_list[_pe_list_index].AA_I_INDEX) == false)
+                    //        //        {
+                    //        //            _info_0_text = z_blank //+ "____________________"
+                    //        //            + z_blank + _pe1_list[_pe_list_index].I_NAME_NSFX
+                    //        //            + " verh. " + _pe1_list[_pe_list_index].I_NAME_MARNM
+                    //        //            + z_blank + _pe1_list[_pe_list_index].I_NAME_SURN
+                    //        //            + z_blank + _pe1_list[_pe_list_index].I_NAME_GIVN
+                    //        //            //+ " born: " + _pe1_list[_pe_list_index].I_BIRT_DATE  // these Values are added later
+                    //        //            //+ " marr: " + _pe1_list[_pe_list_index].I_MARR_DATE
+                    //        //            //+ " died: " + _pe1_list[_pe_list_index].I_DEAT_DATE
+                    //        //            + z_blank + _pe1_list[_pe_list_index].AA_I_INDEX
+                    //        //            ;
+                    //        //            Console.WriteLine(_info_0_text);
+                    //        //            AddError("7777777", "NO_0012 Suffix contains 'unklar'", _info_0_text);
+                    //        //        }
+                    //        //    }
+                    //        //}
+                    //        //break;
+
+                    //        //if (_pe1_list[_pe_list_index].I_BIRT_DATE == "")
+                    //        //{
+                    //        //    _info_0_text = "    z_slow is ;" + z_slow + "; NO_0013;CheckBirthDat: no BirthDate yet for https://www.myheritage.de/site-family-tree-104441723/85244?rootIndivudalID=1" + _pe1_list[_pe_list_index].AA_I_INDEX;
+                    //        //    Console.WriteLine(_info_0_text);
+                    //        //    AddError("1231232", "INFO", _info_0_text);
+
+                    //        //    _pe1_list[_pe_list_index].I_SEX += "U";  // 3 groups ..each 65.000 for Excel limits: M, F and U plus MU and FU
+                    //        //}
+
+
+                    //        default:
+                    //            //MessageBox.Show("Unknown z_key at z_2 = {0}", z_1);
+                    //            //if (_z0z1z2 != "F_F_MARR_ADDR" || _z0z1z2 != "H_H__NAV__NAV" || _z0z1z2 != "H_H_DATE_TIME")
+                    //            unknownKeyText = z_newline + "z_key not used at _z0z1z2 = " + _z0z1z2 + " at line: " + _count.ToString() + ": z_value = " + _valueAdd;
+                    //            //Console.WriteLine(/*z_newline + */"z_key not used at _z0z1z2 = " + _z0z1z2 + " at line: " + _count.ToString() + ": z_value = " + _valueAdd);
+                    //            //   >> message below
+
+                    //            // z_2 ignored
+
+                    //            //if (_z0z1z2 == "H_H_DATE_TIME") unknownKeyText = "";
+                    //            //if (_z0z1z2 == "H_H_DATE__TIM") unknownKeyText = "";
+                    //            //if (_z0z1z2 == "H_H_SOUR__TRE") unknownKeyText = "";
+                    //            //if (_z0z1z2 == "H_H__NAV__NAV") unknownKeyText = "";
+                    //            //if (_z0z1z2 == "F_F_MARR_ADDR") unknownKeyText = "";
+                    //            //if (_z0z1z2 == "I_I_OCCU__UID") unknownKeyText = "";
+                    //            //if (_z0z1z2 == "I_I_OCCU_RIN ") unknownKeyText = "";
+                    //            //if (_z0z1z2 == "I_I_RESI__UID") unknownKeyText = "";
+                    //            //if (_z0z1z2 == "I_I_RESI_RIN ") unknownKeyText = "";
+                    //            //if (_z0z1z2 == "I_I_RESI_TYPE") unknownKeyText = "";
+                    //            //if (_z0z1z2 == "I_I_RESI_SOUR") unknownKeyText = "";
+                    //            //if (_z0z1z2 == "I_I_NAME_SOUR") unknownKeyText = "";
+                    //            //if (_z0z1z2 == "I_I_BIRT_SOUR") unknownKeyText = "";
+                    //            //if (_z0z1z2 == "I_I_BAPM_SOUR") unknownKeyText = "";
+                    //            //if (_z0z1z2 == "I_I_DEAT_SOUR") unknownKeyText = "";
+                    //            //if (_z0z1z2 == "I_I_BURI_SOUR") unknownKeyText = "";
+                    //            //if (_z0z1z2 == "F_F_DIV__UID") unknownKeyText = "";
+                    //            //if (_z0z1z2 == "F_F_DIV_RIN ") unknownKeyText = "";
+                    //            //if (_z0z1z2 == "F_F_ENGA__UID") unknownKeyText = "";
+                    //            //if (_z0z1z2 == "F_F_ENGA_RIN ") unknownKeyText = "";
+                    //            //if (_z0z1z2 == "F_F_MARL__UID") unknownKeyText = "";
+                    //            //if (_z0z1z2 == "F_F_MARL_RIN ") unknownKeyText = "";
+
+                    //            //if (_z0z1z2 == "I_I_SOUR_PAGE ") unknownKeyText = "";
+                    //            //if (_z0z1z2 == "I_I_SOUR_QUAY ") unknownKeyText = "";
+                    //            //if (_z0z1z2 == "I_I_SOUR_DATA ") unknownKeyText = "";
+
+
+                    //            //if (unknownKeyText != "")
+                    //            //    Console.WriteLine(/*z_newline + */"Unknown z_key at _z0z1z2 = " + _z0z1z2 + " at line: " + _count.ToString() + ": z_value = " + _valueAdd);
+
+                    //            _line_used = false; break;
+
+                    //    }
+                    //}
+                    break;
+            }
+
+            if (z_0 != "I_" && z_0 != "F_")
+            {
+                switch (z_2)
+                {
+                    case "H_FILE": z_gedheadText += _valueAdd; break;
+                    default:
+                        break;
+                }
+            }
+
+
+            if (_line_used == false)
+            {
+                z_info_new = new("INFO;", ";", "unused line ; " + _count + " > " + _line_string);
+                z_info_list.Add(z_info_new);
+            }
+
+
+            _comment_inside_code = "End of:  if (_first == 2";
+        }
+        _all_lines.Clear();
+        _comment_inside_code = "End of > foreach _all_lines";
+    }
+
+    private static void N06_FAM_Lines(List<string> _all_fam_lines)
+    {
+        _count = 0;
+        z_nextGoalOfLines = 100000;
+
+        string keyPrevious_fam = "";
+        int _fam_list_index = -1;
+        string unknownKeyText;
+        string z_0 = "";
+        string z_1 = "";
+        string z_2 = "";
+        string _entry_text = ""; ;
+
+
+        foreach (var _line in _all_fam_lines)
+        {
+            _count += 1;
+            //Trace.WriteLine(_count + " > " + _line);
+
+            //_info_0_text = _count + " > Orig.Line= > " + _line;
+            //Console.WriteLine(_info_0_text);
+            string _valueAdd = "" + _entry_text; 
+            bool _line_used = true;
+
+            Replace_stuff(_line, out string _line_string);
+
+            _line_string = Replace_Months_Days(_line_string);
+
+            _comment_inside_code = "Check input here" + "if (_line_string.Length == 0)" + "if (_count > z_nextGoalOfLines)";
+
+            //_info_0_text = z_newline
+            //    + "now > " + _line_string + z_newline
+            //    + "org > " + _line
+            //    + z_newline
+            //    ;
+            //Xwrite("Step_2205", true, _count + " > " + _info_0_text);
+
+            //_comment_inside_code = "if (_line_string.Length == 0)";
+            //if (_line_string.Length == 0)
+            //{
+            //    _info_0_text = " > " + _count + " > Line= > " + _line_string + " IS EMPTY           > Orig.= > " + _line;
+            //    //Console.WriteLine(_info_0_text);
+            //    Trace.WriteLine(_info_0_text);
+            //    Debugger.Break();
+            //    continue;
+            //}
+
+            //_comment_inside_code = "if (_count > z_nextGoalOfLines)";
+
+            string _first = _line_string[..1];//.ToString();
+            _ = int.TryParse(_first, out int _first_int);
+
+            int secondblankOrEnd = N72_Get_2nd_blank(1, _line_string);
+
+            _comment_inside_code = "firstchar=0";
+
+
+            switch (_first_int)
+            {
+                case 0:
+
+                    if (_count > z_nextGoalOfLines)
+                    {
+                        _info_0_text = "Step_1400 > " + DateTime.Now
+                            + " > " + z_nextGoalOfLines / 1000 + " TSD > Line= > " + _line_string + "           > Orig.= > " + _line;
+                        Xwrite("INFO", true, _info_0_text);
+                        //Trace.WriteLine(_info_0_text);
+                        //z_info_new = new("INFO;", ";", _info_0_text);
+                        //z_info_list.Add(z_info_new);
+
+                        z_nextGoalOfLines += 50000;
+                    }
+
+
+                    if (_pe1_list.Count > 10)
+                    {
+                        _pe2_list.AddRange(_pe1_list);
+
+                        _pe1_list.Clear();
+                    }
+
+                    //switch (_pe1_list.Count)
+                    //{
+                    //    case > 200:
+                    //        _int_peList = 3;
+                    //        Console.WriteLine("_int_peList = 3;");
+                    //        break;
+                    //    case > 100:
+                    //        _int_peList = 2;
+                    //        Console.WriteLine("_int_peList = 2;");
+                    //        break;
+                    //    case > 0:
+                    //        _int_peList = 1;
+                    //        Console.WriteLine("_int_peList = 1;");
+                    //        break;
+                    //}
+
+
+                    //_first = _line_string.[..1].ToString();
+                    //_comment_inside_code = "SAVE TIME";
+
+                    //_comment_inside_code = "here: for all lines";
+
+                    //_first = _line_string[..1];//.ToString();
+
+
+                    //if (_line_string.Contains("DAH+"))
+                    //    _source_string = "_DAH_85244";
+
+                    //if (_line_string.Contains("Jaubert Family Tree"))
+                    //    _source_string = "Sylvie";
+
+                    //if (_line_string.Contains("Family Tree Builder"))
+                    //    _source_string = "FTP-Export";
+
+
+                    _comment_inside_code = "SAVE TIME" + " > here: for all lines" + " > _line_string.Contains(\"UPD\")";
+                    //if (_line_string.Contains("UPD"))  // for header
+                    //{
+                    //    //_update_string = N78_not_used_GetUpdateString(_line_string);
+                    //    _update_string = _line_string;
+                    //}
+
+                    //if (_line_string == "2 AGE 74")
+                    //{
+                    //    //Debugger.Break();
+                    //}
+
+
+
+                    _comment_inside_code = "_entry_text += keyPrevious_pe + \";\" + _line_string + \" > \";";
+                    //if (_first_int != 0)
+                    //{
+                    //    //_entry_text += keyPrevious_pe + ";" + _line_string + " > ";
+                    //}
+
+
+
+                    // Works
+
+
+                    _entry_text = "";
+                    //Console.WriteLine("keyPrevious {0}, _entry_text {1}, _update_string {2}, _source_string {3}", 
+                    //    keyPrevious_pe, _entry_text, _update_string, _source_string);
+
+                    _comment_inside_code = "output for each single entry to _GED_OUT folder";
+                    //if (z_slow > 8 && boolSaveSingleEntry == false)
+                    //{
+                    //    _info_0_text = z_slow + ";NO;no output for each single entry to _GED_OUT folder";
+                    //    Xwrite("Step_8900", true, _line_string);
+
+                    //    boolSaveSingleEntry = true;
+                    //}
+                    //else
+                    //{
+
+
+                    //    if (z_slow < 2 && keyPrevious_pe != null && keyPrevious_pe != "")
+                    //    {
+                    //        _info_0_text = "SaveEntry = eine Datei je ID-Nummer";
+                    //        //SaveEntry(keyPrevious, _entry_text, _update_string, _source_string); // ein 
+                    //        boolSaveSingleEntry = true;
+                    //    }
+                    //}
+
+
+
+
+
+
+                    //int _first_blank = 1;
+
+
+                    // _first_blank
+                    // Replace this unsafe block:
+                    // if (_line_string.Contains(' ')) _first_blank = _line_string.IndexOf(' ');
+                    // int start = _first_blank + 1;
+                    // int stopp = _line_string.Length - start - 1;
+                    // secondblankOrEnd = _line_string.Substring(start, stopp).IndexOf(' ') + 2;
+                    // if (secondblankOrEnd < 2)
+                    //     secondblankOrEnd = _line_string.Length - 2;
+
+                    // With this safe code:
+                    //_comment_inside_code = "NO find _first_blank";
+                    //if (_line_string.Contains(' '))
+                    //{
+                    //    _first_blank = _line_string.IndexOf(' ');
+                    //}
+                    //else
+                    //{
+                    //    _first_blank = -1;
+                    //}
+
+                    // Find second space index robustly
+
+                    //int secondblankOrEnd;
+
+
+
+                    //if (/*_first_blank >= 0 &&*/ _first_blank + 1 < _line_string.Length)
+                    //{
+                    //    secondSpaceIndex = _line_string.IndexOf(' ', _first_blank + 1);
+                    //}
+
+                    //// Use line end when second space not found
+                    //if (secondSpaceIndex == -1)
+                    //{
+                    //    // no second space -> treat as end of line
+                    //    secondblankOrEnd = _line_string.Length;
+                    //}
+                    //else
+                    //{
+                    //    secondblankOrEnd = secondSpaceIndex;
+                    //}
+                    //if (SecondBlankOrEnd == 4 )  // only e.g. BIRT, nothing more
+                    //    SecondBlankOrEnd = 0;
+                    //Console.WriteLine("_first_blank = {0}, = {1}, {2}", _first_blank, secondblankOrEnd, _line_string);
+
+
+                    // Example
+                    // 0123456789
+                    // 2 DATE 9 DEC 1939
+                    // 1 SEX M
+
+
+
+                    //if (_line_string.Substring(2, 4).ToString() == "HEAD")
+                    //{
+                    //    z_0 = "H_";
+                    //    //_sw0_int = 0;
+                    //    z_key = "HEAD";
+                    //    keyPrevious_pe = z_key;
+                    //    //continue;
+                    //}
+
+                    _comment_inside_code = "ab hier U_";
+                    //if (_line_string.Substring(2, 2).ToString() == @"@U")
+                    //{
+                    //    z_0 = "U_";
+                    //    Console.WriteLine("#### skipped 'U' = {0}", _line_string);
+                    //    //continue;
+                    //}
+
+                    // NOTE
+                    _comment_inside_code = "ab hier notes";
+                    //if (_line_string.EndsWith("NOTE"))
+                    //{
+                    //    z_0 = "N_";
+                    //    //Console.WriteLine("#### skipped 'NOTE' = {0}", _line_string);
+
+                    //    //z_key = _line_string.Substring(3, secondblankOrEnd - 3).ToString().Trim();
+                    //    //z_key = _line_string.Substring(3, secondblankOrEnd - 3).ToString().Trim();
+                    //    z_key = _line_string[3..secondblankOrEnd].ToString().Trim();
+                    //    z_key = z_key.Replace("@", "");
+                    //    keyPrevious_note = z_key;
+
+                    //    Note noteNew = new(keyPrevious_note, z_blank, z_blank, z_blank);
+                    //    z_note_list.Add(noteNew);
+                    //    //Console.WriteLine("adding FAM = {0}", keyPrevious);
+                    //    //continue;
+                    //}
+
+
+                    // INDI
+                    //int _pe_index_count = 0;
+                    //if (_line_string.EndsWith("INDI"))  // not TRLR = each entry
+                    //{
+                    //    z_0 = "I_";
+                    //    //_sw0_int = 1;
+
+                    //    //z_key = _line_string.Substring(3, secondblankOrEnd - 3).ToString().Trim();
+                    //    z_key = _line_string[3..secondblankOrEnd].ToString().Trim();
+                    //    z_key = N61_CleanID(z_key);
+                    //    keyPrevious_fam = z_key;
+                    //    //keyPrevious_indi = z_key;
+                    //    if (keyPrevious_fam == "")
+                    //    {
+                    //        keyPrevious_fam = " ";
+                    //    }
+
+                    //    Pe peNew = new(keyPrevious_fam
+                    //        , z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank  // 11
+                    //        , z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank  // 21
+                    //        , z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank  // 31
+                    //        , z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank  // 41
+                    //        , z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank  // 51
+
+
+                    //        );
+                    //    //if (_count < 11300000)
+                    //    //{
+                    //    //switch (_int_peList)
+                    //    //{
+                    //    //    case 1: _pe1_list.Add(peNew); break;
+                    //    //    case 2: _pe2_list.Add(peNew); break;
+                    //    //    case 3: _pe3_list.Add(peNew); break;
+                    //    //    case 4: _pe4_list.Add(peNew); break;
+                    //    //default:
+                    //    //        break;
+                    //    //}
+                    //    _pe1_list.Add(peNew);
+                    //    //}
+                    //    //else
+                    //    //{
+                    //    _comment_inside_code = "pe2_list";
+                    //    //    _pe2_list.Add(peNew);
+                    //    //}
+
+                    //    // record index for fast lookup
+                    //    _pe1_index[keyPrevious_indi] = _pe1_list.Count - 1;
+                    //    //_pers_text_coll_global.Clear();
+                    //    //Console.WriteLine("adding = {0}", keyPrevious);
+                    //    //continue;
+                    //}
+
+                    // FAM
+                    _comment_inside_code = "ab hier families";
+                    //int _fam_index_count = 0;
+                    if (_line_string.EndsWith("FAM"))
+                    {
+                        z_0 = "F_";
+                        //_sw0_int = 2;
+                        //z_key = _line_string.Substring(3, secondblankOrEnd - 3).ToString().Trim();
+                        z_key = _line_string[3..secondblankOrEnd].ToString().Trim();
+                        z_key = N61_CleanID(z_key);
+                        keyPrevious_fam = z_key;
+
+                        Fam famNew = new(keyPrevious_fam
+                            , z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank//  // 11//
+                            , z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank//  // 21
+                            , z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank, z_blank//,
+                            );
+
+
+                        // record index for fast lookup
+                        _fam_list.Add(famNew);
+                        _fam_index[keyPrevious_fam] = _fam_list.Count - 1;
+                        //Console.WriteLine("adding FAM = {0}", keyPrevious);
+                        //continue;
+                    }
+
+                    //_pe_list_index = _pe1_index.GetValueOrDefault(keyPrevious_indi, -1);
+                    _fam_list_index = _fam_index.GetValueOrDefault(keyPrevious_fam, -1);
+                    //int _note_list_index = 0;
+                    ////int _source_list_index = z_source_list.FindIndex(item => item.AA_S_INDEX == keyPrevious_sour);
+                    //int _source_list_index = 0;
+                    ////int _album_list_index = z_album_list.FindIndex(item => item.AA_A_INDEX == keyPrevious_album);
+                    //int _album_list_index = 0;
+                    //z_lastPeListIndex_DONE = _pe_list_index + _note_list_index + _source_list_index + _album_list_index;
+                    //int lastPeListIndex = _pe_list_index + _note_list_index + _source_list_index + _album_list_index;
+                    //else
+                    //{
+                    //    unknownKeyCount += 1;
+                    //    keyPrevious = z_key;
+                    //    //z_lastPeListIndex_DONE = z_lastPeListIndex;
+                    //    //pe peNew = new pe(keyPrevious,"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "");
+                    //    //_pe1_list.Add(peNew);
+                    //    z_key = "unknownKeyCount" + unknownKeyCount.ToString();
+
+                    //}
+
+                    _comment_inside_code = "ab hier ALBUM";
+                    //ALBUM
+                    //if (_line_string.EndsWith("ALBUM"))
+                    //{
+                    //    z_0 = "A_";
+                    //    //Console.WriteLine("#### skipped 'ALBUM' = {0}", _line_string);
+
+                    //    //z_key = _line_string.Substring(3, secondblankOrEnd - 3).ToString().Trim();
+                    //    z_key = _line_string[3..secondblankOrEnd].ToString().Trim();
+                    //    z_key = z_key.Replace("@", "");
+
+                    //    if (z_album_list.FindIndex(item => item.AA_A_INDEX == z_key) > -1)
+                    //    {
+                    //        z_key += "2";
+                    //    }
+
+                    //    keyPrevious_album = z_key;
+
+                    //    Album albumNew = new(keyPrevious_album, z_blank, z_blank, z_blank, z_blank);
+                    //    z_album_list.Add(albumNew);
+                    //    //Console.WriteLine("adding ALBUM = {0}", keyPrevious);
+                    //    //continue;
+                    //}
+
+                    _comment_inside_code = "ab hier end of file";
+                    //if (_line_string.EndsWith("TRLR"))
+                    //{
+                    //    z_0 = "END_";
+                    //    //Console.WriteLine("___________________________________________________start;" + z_start_time_global + ";now;" + DateTime.Now + ";END  ;#### TRLR = End of file");
+                    //    _info_0_text = "TRLR = End of file > " + _count;
+                    //    Xwrite("Step_9985", true, _info_0_text);
+                    //    //continue;
+                    //}
+
+
+                    //string keyPrevious_sour = "";
+                    _comment_inside_code = "ab hier sources";
+                    //if (_line_string.EndsWith("SOUR"))  // SOUR
+                    //{
+                    //    z_0 = "S_";
+                    //    //z_key = _line_string.Substring(3, secondblankOrEnd - 3).ToString().Trim();
+                    //    z_key = _line_string[3..secondblankOrEnd].ToString().Trim();
+                    //    z_key = z_key.Replace("@", "");
+                    //    keyPrevious_sour = z_key;
+
+                    //    Source sourceNew = new(keyPrevious_sour, z_blank, z_blank, z_blank);//, z_blank, z_blank, z_blank, z_blank);
+                    //    z_source_list.Add(sourceNew);
+                    //    //Console.WriteLine("adding FAM = {0}", keyPrevious);
+                    //    //continue;
+                    //}
+
+
+                    z_lastPeListIndex_DONE = z_lastPeListIndex - 1;
+                    //}
+                    _comment_inside_code = "End of:  if (_first == 0";
+
+
+                    //_pe3_index.Clear();
+                    //for (int i = 0; i < _pe1_list.Count; i++)
+                    //{
+                    //    _pe3_index.Add(_pe1_list[i].AA_I_INDEX, i);
+                    //}
+
+                    //_fam_index.Clear();
+                    //for (int i = 0; i < _fam_list.Count; i++)
+                    //{
+                    //    _fam_index.Add(_fam_list[i].AA_F_INDEX, i);
+                    //}
+
+
+                    //if (_pe3_index.TryGetValue(keyPrevious_pe, out int value_pe))
+                    //{
+                    //    _pe_list_index = value_pe;
+                    //}
+
+                    //int _fam_list_index = 0;// = _pe1_list.FindIndex(item => item.AA_I_INDEX == keyPrevious);
+                    //if (_fam_index.TryGetValue(keyPrevious_fam, out int value_fam))
+                    //{
+                    //    _fam_list_index = value_fam;
+                    //}
+
+                    //_pe3_index.Add(_pe1_list[_pe_list_index].AA_I_INDEX, _pe_list_index);
+
+                    //int z_lastPeListIndex_DONE;
+
+                    //_fam_index.Add(_fam_list[_pe_list_index].AA_F_INDEX, _pe_list_index);
+                    //int _note_list_index = z_note_list.FindIndex(item => item.AA_N_INDEX == keyPrevious_note);
+
+                    //_pe1_list.Add(peNew);
+
+                    break;
+
+
+
+
+
+                case 1:
+                    _comment_inside_code = "first = 1";
+                    //#region _first_int == 1"
+
+                    if (_line_string.Length > 5)
+                        z_1 = z_0 + _line_string.Substring(2, 4).Trim(); // + z_separator;
+                    else
+                        z_1 = z_0 + _line_string.Substring(2, 3).Trim(); // + z_separator;
+
+                    //_valueAdd = "";
+                    //Console.WriteLine("_line_string.Length = {1}, line = {0}", _line_string, _line_string.Length);
+                    //if (_line_string.Length != z_1.Length + 2)
+                    //{
+
+                    //z_1 + z_separator +  // without
+                    //_line_string.Substring(secondblankOrEnd + 1, _line_string.Length - secondblankOrEnd - 1) + z_separator;
+
+                    //}
+
+                    //_valueAdd = z_1.Substring(secondblankOrEnd + 1, z_1.Length - secondblankOrEnd - 1) + z_separator;
+
+                    int z_1_length = z_1.Length + 1;
+
+                    if (_line_string.Length > z_1.Length)
+                    {
+                        _valueAdd = _line_string[z_1_length..];
+                        //_valueAdd = _line_string[2..];
+                    }
+
+                    //if (_valueAdd == "ENGA") _valueAdd = "verlobt";
+                    //if (_valueAdd == "MARL") _valueAdd = "StAmt";
+
+                    //else { _valueAdd}
+                    //z_value += CleanText(_valueAdd);
+                    //z_value += _valueAdd;
+
+                    //_valueAdd = CleanText(_valueAdd);
+                    //_valueAdd = CleanText(_valueAdd);
+
+                    //if (z_0 == "I_")
+                    //{
+                    //    //Xwrite("",true,_line_string);
+
+                    //    switch (z_1)
+                    //    {
+                    //        // FAM
+                    //        //case "F_HUSB": _fam_list[_fam_list_index].F_HUSB = N61_CleanID(_valueAdd); break;
+                    //        //case "F_WIFE": _fam_list[_fam_list_index].F_WIFE = N61_CleanID(_valueAdd); break;
+                    //        case "F_RIN": /*_fam_list[_fam_list_index].F_RIN = _valueAdd;*/ break;
+                    //        case "F_RIN ": /*_fam_list[_fam_list_index].F_RIN = _valueAdd;*/ break;
+                    //        case "F_UID": /*_fam_list[_fam_list_index].F__UID = _valueAdd;*/ break;
+                    //        //case "F_UID": /*_fam_list[_fam_list_index].F__UID = _valueAdd;*/ break;
+                    //        case "I_UID": /*_fam_list[_fam_list_index].F__UID = _valueAdd;*/ break;
+                    //        case "F__UID": /*_fam_list[_fam_list_index].F__UID = _valueAdd;*/ break;
+                    //        case "I__UID": /*_fam_list[_fam_list_index].F__UID = _valueAdd;*/ break;
+                    //        //case "F_CHIL": _fam_list[_fam_list_index].F_CHIL += N61_CleanID(_valueAdd) + " # "; break;
+                    //        ////case "F__UPD": _fam_list[_fam_list_index].F__UPD = _valueAdd; break;
+                    //        case "F_MARR": /*_fam_list[_fam_list_index].F_MARR = _valueAdd;*/ break;
+                    //        //case "F_MARL": _fam_list[_fam_list_index].F_MARL = _valueAdd; break;  // Hochzeit Standesamt
+                    //        //case "F_DIV": _fam_list[_fam_list_index].F_DIV = _valueAdd; break;  // Divorce
+                    //        //case "F_ENGA": _fam_list[_fam_list_index].F_ENGA = _valueAdd; break; // Verlobung
+                    //        //                                                                     //case "F_ANUL": _fam_list[_fam_list_index].F_ANUL = _valueAdd; break;
+                    //        //                                                                     //case "F_EVEN": _fam_list[_fam_list_index].F_EVEN = _valueAdd; break;
+
+                    //        //// SOURCE
+                    //        ////case "S_AUTH": z_source_list[_source_list_index].S_AUTH = _valueAdd; break;
+                    //        ////case "S_TITL": z_source_list[_source_list_index].S_TITL = _valueAdd; break;
+                    //        ////case "S_PUBL": z_source_list[_source_list_index].S_PUBL = _valueAdd; break;
+                    //        ////case "S_TEXT": z_source_list[_source_list_index].S_TEXT = _valueAdd; break;
+                    //        ////case "S__TYP": /*z_source_list[_source_list_index].S__TYP = _valueAdd;*/ break;
+                    //        ////case "S__MED": z_source_list[_source_list_index].S__MED = _valueAdd; break;
+
+                    //        //// ALBUM = Photos
+                    //        ////case "S_AUTH": z_album_list[_album_list_index].S_AUTH = _valueAdd; break;
+                    //        ////case "A_TITL": z_album_list[_album_list_index].A_TITL = _valueAdd; break;
+                    //        ////case "A_DESC": z_album_list[_album_list_index].A_DESC = _valueAdd; break;
+                    //        ////case "S_TEXT": z_album_list[_album_list_index].S_TEXT = _valueAdd; break;
+                    //        case "A__UPD": /*z_album_list[_album_list_index].A__UPD = _valueAdd;*/ break;
+                    //        case "A_RIN": /*z_album_list[_album_list_index].A_RIN = _valueAdd;*/ break;
+
+
+                    //        //// INDI
+                    //        case "I_NAME": /*_pe1_list[_pe_list_index].I_NAME = _valueAdd;*/ break;
+                    //        ////case "I_NAME": _pe1_list[_pe_list_index].I_NAME = _valueAdd; break;
+                    //        ////case "I_NAME": _pe1_list[_pe_list_index].I_NAME = _valueAdd; break;
+                    //        ////case "I_NAME": _pe1_list[_pe_list_index].I_NAME = _valueAdd; break;
+                    //        case "I_SEX":
+                    //            //_pe1_list[_pe_list_index].I_SEX = _valueAdd;
+                    //            //if (z_slow > 0)
+                    //            //{
+                    //            //    if (_bool_sex_u == false && _valueAdd.Contains("U"))// || _valueAdd.Contains("") || _valueAdd.Contains(" "))
+                    //            //    {
+                    //            //        errortext = z_blank + "SEX contains U"
+                    //            //            + z_blank + _pe1_list[_pe_list_index].I_SEX
+                    //            //            + " verh. " + _pe1_list[_pe_list_index].I_NAME_MARNM
+                    //            //            + z_blank + _pe1_list[_pe_list_index].I_NAME_SURN
+                    //            //            + z_blank + _pe1_list[_pe_list_index].I_NAME_GIVN
+                    //            //            + z_blank + _pe1_list[_pe_list_index].AA_I_INDEX
+                    //            //            ;
+                    //            //        Console.WriteLine(errortext);
+                    //            //        AddError(_count.ToString(), "SEX contains U", errortext);
+                    //            //    }
+                    //            //}
+                    //            //else
+                    //            //if (z_slow == 0 && _bool_sex_u == false)
+                    //            //{
+                    //            //    _info_0_text = z_slow + "; NO_0009;no check for *SEX contains U*";
+                    //            //    Xwrite("Step_9905", true, _info_0_text);
+
+                    //            //    _bool_sex_u = true;
+                    //            //}
+                    //            break;
+                    //        case "I_BIRT": /*_pe1_list[_pe_list_index].I_BIRT = _valueAdd;*/ break;
+                    //        //case "I_DEAT":
+                    //        //    _pe1_list[_pe_list_index].I_DEAT = _valueAdd;
+
+                    //        //    if (_valueAdd == "DEAT Y")
+                    //        //        _pe1_list[_pe_list_index].I_SEX += "d";
+                    //        //    else
+                    //        //        _pe1_list[_pe_list_index].I_SEX += "a";
+
+                    //        //    break;
+
+                    //        case "I_BURI": /*_pe1_list[_pe_list_index].I_BURI = _valueAdd;*/ break;
+                    //        //case "I_FAMS": _pe1_list[_pe_list_index].I_FAMS += "Sp:F" + N61_CleanID(_valueAdd[1..]) + " # "/* + z_ht*/; break;
+                    //        //case "I_FAMC": _pe1_list[_pe_list_index].I_FAMC += "C:F" + N61_CleanID(_valueAdd[1..]) + " # "; break;
+
+
+                    //        case "I_RESI": /*_pe1_list[_pe_list_index].I_RESI = _valueAdd;*/ break;
+                    //        //case "I_ADDR": /*_pe1_list[_pe_list_index].I_RESI = _valueAdd;*/ break;  // same like RESI ??
+                    //        //case "I_CONF": /*_pe1_list[_pe_list_index].I_CONF = _valueAdd;*/ break;
+                    //        //case "I_RELI": _pe1_list[_pe_list_index].I_RELI = _valueAdd; break;
+                    //        //case "I_OCCU": _pe1_list[_pe_list_index].I_OCCU = _valueAdd; break;
+                    //        //case "I_CENS": /*_pe1_list[_pe_list_index].I_CENS = _valueAdd;*/ break;
+                    //        //case "I_NOTE": _pe1_list[_pe_list_index].I_NOTE = _valueAdd; break;
+
+                    //        case "I_RIN": /*_pe1_list[_pe_list_index].I_RIN = _valueAdd;*/ break;
+                    //        //case "I__UID": /*_pe1_list[_pe_list_index].I__UID = _valueAdd;*/ break;
+
+                    //        case "S_RIN": /*z_source_list[_source_list_index].S_RIN = _valueAdd;*/ break;
+                    //        case "S__UID": /*z_source_list[_source_list_index].S__UID = _valueAdd;*/ break;
+
+                    //        //case "I_ORDN": /*z_source_list[_source_list_index].S__UID = _valueAdd;*/ break;
+
+                    //        case "I_RIN ": /*_pe1_list[_pe_list_index].I_RIN = _valueAdd;*/ break;
+                    //        case "I__RIN": /*_pe1_list[_pe_list_index].I_RIN = _valueAdd;*/ break;
+                    //        case "I_UID ": /*_pe1_list[_pe_list_index].I_UID = _valueAdd;*/ break;
+
+                    //        case "I__UPD": /*_pe1_list[_pe_list_index].I_UPD = _valueAdd;*/ break;
+                    //        //case "I_CHAN": _pe1_list[_pe_list_index].I_UPD = "### Change instead UPD ### " + _valueAdd; break;
+                    //        //case "N_CONC": z_note_list[_note_list_index].N_CONC = _valueAdd; break;
+                    //        //case "N_PRIN": z_note_list[_note_list_index].N_PRIN = _valueAdd; break;
+                    //        case "N_RIN ": /*z_note_list[_note_list_index].N_RIN = _valueAdd;*/ break;
+                    //        case "N_UID ": /*_pe1_list[_pe_list_index].I_UID = _valueAdd;*/ break;
+
+                    //        //case "I_EVEN": /*_pe1_list[_pe_list_index].I_EVEN = _valueAdd;*/ break;
+                    //        //case "I_EMIG": _pe1_list[_pe_list_index].I_EMIG = _valueAdd; break;
+                    //        //case "I_IMMI": _pe1_list[_pe_list_index].I_IMMI = _valueAdd; break;
+
+                    //        //case "I_NATI": /*_pe1_list[_pe_list_index].I_NATI = _valueAdd;*/ break;
+
+
+                    //        case "I_SOUR": /*_pe1_list[_pe_list_index].I_SOUR = _valueAdd;*/ break;
+
+                    //        case "I_OBJE": /*_pe1_list[_pe_list_index].I_OBJE = _valueAdd;*/ break;
+
+                    //        //case "I_MARR": _pe1_list[_pe_list_index].I_MARR = _valueAdd; break;
+                    //        //case "I_DIV ": _pe1_list[_fam_list_index].I_DIV = _valueAdd; break;
+                    //        //case "I_NATI": _pe1_list[_pe_list_index].I_NATI = _valueAdd; break;
+
+                    //        default: _line_used = false; break;
+                    //    }
+                    //}
+
+
+                    _comment_inside_code = "Families";
+                    if (z_0 == "F_")
+                    {
+                        switch (z_1)
+                        {
+                            // FAM
+                            case "F_HUSB":
+                                _valueAdd = N63_X_String(7, _valueAdd);
+                                //while (_valueAdd.Length < 7)
+                                //{
+                                //    _valueAdd += " " + _valueAdd;
+                                //}
+                                _fam_list[_fam_list_index].F_HUSB = _valueAdd; 
+                                break;
+                            //case "F_HUSB": _fam_list[_fam_list_index].F_HUSB = N61_CleanID(_valueAdd); break;
+                            case "F_WIFE":
+                                _valueAdd = N63_X_String(7, _valueAdd);
+                                _fam_list[_fam_list_index].F_WIFE = _valueAdd; 
+                                break;
+                            //case "F_WIFE": _fam_list[_fam_list_index].F_WIFE = N61_CleanID(_valueAdd); break;
+                            case "F_RIN": /*_fam_list[_fam_list_index].F_RIN = _valueAdd;*/ break;
+                            case "F__UID": /*_fam_list[_fam_list_index].F__UID = _valueAdd;*/ break;
+                            case "F_CHIL": _fam_list[_fam_list_index].F_CHIL += _valueAdd + " # "; break;
+                            //case "F_CHIL": _fam_list[_fam_list_index].F_CHIL += N61_CleanID(_valueAdd) + " # "; break;
+                            //case "F__UPD": _fam_list[_fam_list_index].F__UPD = _valueAdd; break;
+                            case "F_MARR": /*_fam_list[_fam_list_index].F_MARR = _valueAdd;*/ break;
+                            case "F_MARL": _fam_list[_fam_list_index].F_MARL = _valueAdd; break;  // Hochzeit Standesamt
+                            case "F_DIV": _fam_list[_fam_list_index].F_DIV = _valueAdd; break;  // Divorce
+                            case "F_ENGA": _fam_list[_fam_list_index].F_ENGA = _valueAdd; break; // Verlobung
+                                                                                                 //case "F_ANUL": _fam_list[_fam_list_index].F_ANUL = _valueAdd; break;
+                            default: _line_used = false; break;
+                        }
+                    }
+                    _comment_inside_code = "End of:  if (_first == 1";
+                    break;
+
+
+                //#region _first = 2
+                //_first_int == 2"
+                case 2:
+
+                    z_2 = _line_string.Substring(2, 4);
+
+                    _valueAdd = "";
+                    //Console.WriteLine("_line_string.Length = {1}, line = {0}", _line_string, _line_string.Length);
+                    if (_line_string.Length > secondblankOrEnd + 1)
+                    {
+                        secondblankOrEnd += 1;
+                        //_valueAdd =_line_string.Substring(secondblankOrEnd + 1, _line_string.Length - secondblankOrEnd - 1) + z_separator;
+                        _valueAdd = _line_string[secondblankOrEnd..];
+                        //z_0 + z_1 + z_separator + "-" + z_2 + z_separator + // without
+                    }
+
+
+                    //_valueAdd = CleanText(_valueAdd);
+                    //_valueAdd = CleanText(_valueAdd);
+
+                    //z_value += _valueAdd;
+                    z_value += _valueAdd + z_separator;
+
+                    string _z0z1z2 = z_0 + z_1 + "_" + z_2;
+
+
                     if (z_0 == "F_")
                     {
 
                         switch (_z0z1z2)
                         {
                             // FAM
-                            case "F_F_MARR_DATE": _fam_list[_fam_list_index].F_MARR_DATE = _valueAdd; break;
+                            case "F_F_MARR_DATE":
+                                if (_valueAdd.Length == 9)
+                                {
+                                    _fam_list[_fam_list_index].F_MARR_DATE = ",0" + _valueAdd;
+                                }
+                                else
+                                {
+                                    _fam_list[_fam_list_index].F_MARR_DATE = "," + _valueAdd;
+                                }
+                                //_pe1_list[_pe_list_index].I_DEAT_DATE = _valueAdd; 
+                                //break;
+                                //_fam_list[_fam_list_index].F_MARR_DATE = _valueAdd; 
+                                break;
                             case "F_F_MARR_PLAC": _fam_list[_fam_list_index].F_MARR_PLAC = _valueAdd; break;
                             //case "F_F_MARR_PLAC": _fam_list[_fam_list_index].F_MARR_PLAC = N62_CleanPlace(_valueAdd, out _valueAdd); break;
                             case "F_F_MARR_NOTE": _valueAdd = _valueAdd.Replace(",", "#"); _fam_list[_fam_list_index].F_MARR_NOTE = _valueAdd; break;
@@ -3458,43 +6170,43 @@ class A00_Code
                                 //MessageBox.Show("Unknown z_key at z_2 = {0}", z_1);
                                 //if (_z0z1z2 != "F_F_MARR_ADDR" || _z0z1z2 != "H_H__NAV__NAV" || _z0z1z2 != "H_H_DATE_TIME")
                                 unknownKeyText = z_newline + "z_key not used at _z0z1z2 = " + _z0z1z2 + " at line: " + _count.ToString() + ": z_value = " + _valueAdd;
-                            //Console.WriteLine(/*z_newline + */"z_key not used at _z0z1z2 = " + _z0z1z2 + " at line: " + _count.ToString() + ": z_value = " + _valueAdd);
-                            //   >> message below
+                                //Console.WriteLine(/*z_newline + */"z_key not used at _z0z1z2 = " + _z0z1z2 + " at line: " + _count.ToString() + ": z_value = " + _valueAdd);
+                                //   >> message below
 
-                            // z_2 ignored
+                                // z_2 ignored
 
-                            //if (_z0z1z2 == "H_H_DATE_TIME") unknownKeyText = "";
-                            //if (_z0z1z2 == "H_H_DATE__TIM") unknownKeyText = "";
-                            //if (_z0z1z2 == "H_H_SOUR__TRE") unknownKeyText = "";
-                            //if (_z0z1z2 == "H_H__NAV__NAV") unknownKeyText = "";
-                            //if (_z0z1z2 == "F_F_MARR_ADDR") unknownKeyText = "";
-                            //if (_z0z1z2 == "I_I_OCCU__UID") unknownKeyText = "";
-                            //if (_z0z1z2 == "I_I_OCCU_RIN ") unknownKeyText = "";
-                            //if (_z0z1z2 == "I_I_RESI__UID") unknownKeyText = "";
-                            //if (_z0z1z2 == "I_I_RESI_RIN ") unknownKeyText = "";
-                            //if (_z0z1z2 == "I_I_RESI_TYPE") unknownKeyText = "";
-                            //if (_z0z1z2 == "I_I_RESI_SOUR") unknownKeyText = "";
-                            //if (_z0z1z2 == "I_I_NAME_SOUR") unknownKeyText = "";
-                            //if (_z0z1z2 == "I_I_BIRT_SOUR") unknownKeyText = "";
-                            //if (_z0z1z2 == "I_I_BAPM_SOUR") unknownKeyText = "";
-                            //if (_z0z1z2 == "I_I_DEAT_SOUR") unknownKeyText = "";
-                            //if (_z0z1z2 == "I_I_BURI_SOUR") unknownKeyText = "";
-                            //if (_z0z1z2 == "F_F_DIV__UID") unknownKeyText = "";
-                            //if (_z0z1z2 == "F_F_DIV_RIN ") unknownKeyText = "";
-                            //if (_z0z1z2 == "F_F_ENGA__UID") unknownKeyText = "";
-                            //if (_z0z1z2 == "F_F_ENGA_RIN ") unknownKeyText = "";
-                            //if (_z0z1z2 == "F_F_MARL__UID") unknownKeyText = "";
-                            //if (_z0z1z2 == "F_F_MARL_RIN ") unknownKeyText = "";
+                                //if (_z0z1z2 == "H_H_DATE_TIME") unknownKeyText = "";
+                                //if (_z0z1z2 == "H_H_DATE__TIM") unknownKeyText = "";
+                                //if (_z0z1z2 == "H_H_SOUR__TRE") unknownKeyText = "";
+                                //if (_z0z1z2 == "H_H__NAV__NAV") unknownKeyText = "";
+                                //if (_z0z1z2 == "F_F_MARR_ADDR") unknownKeyText = "";
+                                //if (_z0z1z2 == "I_I_OCCU__UID") unknownKeyText = "";
+                                //if (_z0z1z2 == "I_I_OCCU_RIN ") unknownKeyText = "";
+                                //if (_z0z1z2 == "I_I_RESI__UID") unknownKeyText = "";
+                                //if (_z0z1z2 == "I_I_RESI_RIN ") unknownKeyText = "";
+                                //if (_z0z1z2 == "I_I_RESI_TYPE") unknownKeyText = "";
+                                //if (_z0z1z2 == "I_I_RESI_SOUR") unknownKeyText = "";
+                                //if (_z0z1z2 == "I_I_NAME_SOUR") unknownKeyText = "";
+                                //if (_z0z1z2 == "I_I_BIRT_SOUR") unknownKeyText = "";
+                                //if (_z0z1z2 == "I_I_BAPM_SOUR") unknownKeyText = "";
+                                //if (_z0z1z2 == "I_I_DEAT_SOUR") unknownKeyText = "";
+                                //if (_z0z1z2 == "I_I_BURI_SOUR") unknownKeyText = "";
+                                //if (_z0z1z2 == "F_F_DIV__UID") unknownKeyText = "";
+                                //if (_z0z1z2 == "F_F_DIV_RIN ") unknownKeyText = "";
+                                //if (_z0z1z2 == "F_F_ENGA__UID") unknownKeyText = "";
+                                //if (_z0z1z2 == "F_F_ENGA_RIN ") unknownKeyText = "";
+                                //if (_z0z1z2 == "F_F_MARL__UID") unknownKeyText = "";
+                                //if (_z0z1z2 == "F_F_MARL_RIN ") unknownKeyText = "";
 
-                            //if (_z0z1z2 == "I_I_SOUR_PAGE ") unknownKeyText = "";
-                            //if (_z0z1z2 == "I_I_SOUR_QUAY ") unknownKeyText = "";
-                            //if (_z0z1z2 == "I_I_SOUR_DATA ") unknownKeyText = "";
+                                //if (_z0z1z2 == "I_I_SOUR_PAGE ") unknownKeyText = "";
+                                //if (_z0z1z2 == "I_I_SOUR_QUAY ") unknownKeyText = "";
+                                //if (_z0z1z2 == "I_I_SOUR_DATA ") unknownKeyText = "";
 
 
-                            //if (unknownKeyText != "")
-                            //    Console.WriteLine(/*z_newline + */"Unknown z_key at _z0z1z2 = " + _z0z1z2 + " at line: " + _count.ToString() + ": z_value = " + _valueAdd);
+                                //if (unknownKeyText != "")
+                                //    Console.WriteLine(/*z_newline + */"Unknown z_key at _z0z1z2 = " + _z0z1z2 + " at line: " + _count.ToString() + ": z_value = " + _valueAdd);
 
-                            _line_used = false; break;
+                                _line_used = false; break;
 
                         }
                     }
@@ -3514,7 +6226,7 @@ class A00_Code
 
             if (_line_used == false)
             {
-                z_info_new = new("INFO;", ";", "unused line ; " + _count + " > "+ _line_string);
+                z_info_new = new("INFO;", ";", "unused line ; " + _count + " > " + _line_string);
                 z_info_list.Add(z_info_new);
             }
 
@@ -3522,121 +6234,16 @@ class A00_Code
             _comment_inside_code = "End of:  if (_first == 2";
         }
         _comment_inside_code = "End of > foreach _all_lines";
+    }
 
-
-        _comment_inside_code = "boolCheckUnklar == false";
-        //if (z_slow < 2 && boolCheckUnklar == false)
-        //{
-        //    _info_0_text = z_slow + "; NO_0007;for unklar / Klärung / lebt";
-        //    Xwrite("Step_9905", true, _info_0_text);
-
-        //    boolCheckUnklar = true;
-        //}
-
-        //if (z_slow < x && z_lastPeListIndex_DONE > 0)  // to avoid crashes
-        //{
-        //    //z_lastPeListIndex_DONE = z_lastPeListIndex;
-
-        //    string valueCheck = _pe1_list[z_lastPeListIndex_DONE].I_NAME_NSFX;
-        //    if (valueCheck.Contains("unklar") || valueCheck.Contains("Klärung") || valueCheck.Contains("lebt?"))
-        //    {
-        //        if (DontCheck_NSFX(_pe1_list[z_lastPeListIndex].AA_I_INDI) == false)
-        //        {
-        //            errortext = z_blank //+ "____________________"
-        //            + z_blank + _pe1_list[z_lastPeListIndex_DONE].I_NAME_NSFX
-        //            + " verh. " + _pe1_list[z_lastPeListIndex_DONE].I_NAME_MARNM
-        //            + z_blank + _pe1_list[z_lastPeListIndex_DONE].I_NAME_SURN
-        //            + z_blank + _pe1_list[z_lastPeListIndex_DONE].I_NAME_GIVN
-        //            + " born: " + _pe1_list[z_lastPeListIndex_DONE].I_BIRT_DATE
-        //            + " born_at: " + _pe1_list[z_lastPeListIndex_DONE].I_BIRT_PLAC
-        //            + " marr: " + _pe1_list[z_lastPeListIndex_DONE].I_MARR_DATE
-        //            + " died: " + _pe1_list[z_lastPeListIndex_DONE].I_DEAT_DATE
-        //            + " " + _pe1_list[z_lastPeListIndex_DONE].AA_I_INDI
-        //            ;
-        //            errortext = errortext.Replace("=", " = ");
-
-        //            if (z_lastPeListIndex > z_lastPeListIndex_DONE)
-        //            {
-        //                Console.WriteLine(errortext);
-        //                AddError(_count.ToString(), "Suffix contains 'unklar'", errortext);
-        //                z_lastPeListIndex_DONE += 1;
-        //            }
-        //            //z_lastPeListIndex_DONE = z_lastPeListIndex;
-        //        }
-        //    }
-        //    valueCheck = "";
-        //}
-
-        // STOPP
-        //if (_CountLines > 30000)
-        //    Console.WriteLine("Stopp at 30.000");
-
-
-        //z_lastPeListIndex_DONE = z_lastPeListIndex;
-
-        // end of : if (_first_int == 2")
-        //#endregion _first = 2
-
-        //z_lastPeListIndex_DONE = z_lastPeListIndex;
-
-
-
-
-        //z_lastPeListIndex_DONE = z_lastPeListIndex;
-
-
-        //if (_pe_list_index >= 0 && _pe1_list[_pe_list_index].I_FAMS != "")
-        //    SplitColl(_pe1_list[_pe_list_index].I_FAMS, ';');
-
-
-
-
-        _update_string = "";  // here !!
-
-        Report_Statistics();
-
-        PopulateSourceList();
-
-        PopulateAlbumList();
-
-        PopulateFamList();
-
-        PopulatePe1List();
-        //if (_pe1_list[i].I_BURI != "")
-        //{
-        //    //_date = "," + _pe1_list[i].I_BURI_DATE;
-        //    _dateString = N77_GetDateString(_pe1_list[i].I_BURI_DATE);
-        //    if (_dateString == " ")
-        //    {
-        //        _dateString = _deathdateString;
-        //        _deathdateString = "";
-        //    }
-
-        //    _place = _pe1_list[i].I_BURI_PLAC;
-        //    _cb = "";
-        //    _dateColl = _dateString.Split(';');
-        //    _date_val = _dateColl[0];
-
-        //    if (_dateColl.Length > 3)
-        //    {
-        //        if (_dateColl[3] != "not 4,8,10,11") _day = _dateColl[3]; else _day = "";
-        //        _month = _dateColl[4];
-        //        _year = _dateColl[5];
-        //    }
-        //    else
-        //    {
-        //        Debugger.Break();
-        //    }
-
-        //    _kind = "9-buried";
-        //    z_event_new = new(0, _day, _month, _year, _date_val
-        //        , _date = "," + _pe1_list[i].I_BURI_DATE, _kind, _dio, _cb, _place
-        //        , _pe1_list[i].AA_I_INDEX, _pe1_list[i].I_SEX, _pers_line_text)
-        //        ;
-        //    z_event_birth_list.Add(z_event_new);
-        //}
-        //}
-        //z_ht = " # ";
+    private static string N63_X_String(int v, string _text)
+    {
+        string _add = "";
+        for (int i = 0; i < v - _text.Length; i++)
+        {
+            _add += " ";
+        }
+        return _add + _text;
     }
 
     private static string N62_CleanPlace(string valueAdd1, out string valueAdd2)
